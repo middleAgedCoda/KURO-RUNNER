@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>KURO: RUNNER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════ TOKENS (unchanged) */
+:root{
+  --bg:#05070a;--panel:#0b1120;--panel2:#0f1828;
+  --border:rgba(255,255,255,0.07);
+  --blue:#38bdf8;--gold:#fbbf24;--green:#22c55e;
+  --red:#ef4444;--purple:#a78bfa;--orange:#fb923c;
+  --dim:#475569;--mid:#94a3b8;--text:#e2e8f0;
+  --mono:'Share Tech Mono',monospace;
+  --disp:'Bebas Neue',sans-serif;
+  --r:10px;
+  --ui-bright:100%;
+  --ui-glow:0px;
+}
+*,*::before,*::after{box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100%;overflow-y:auto;display:flex;align-items:flex-start;justify-content:center;}
+
+/* ── Intro ── */
+#intro{position:fixed;inset:0;z-index:900;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+#intro::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15) 2px,rgba(0,0,0,.15) 4px);pointer-events:none;z-index:2}
+.city-bg{position:absolute;bottom:0;left:0;right:0;height:220px;display:flex;align-items:flex-end;opacity:0;animation:city-rise 1.2s .3s ease-out forwards}
+@keyframes city-rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.bld{background:#0a1520;border-top:1px solid #152540;position:relative;flex-shrink:0}
+.bld::before{content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);width:3px;height:3px;background:var(--red);border-radius:50%;box-shadow:0 0 6px var(--red);animation:blink 2s infinite}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+.ground-glow{position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--blue);box-shadow:0 0 40px 8px rgba(56,189,248,.35);opacity:0;animation:gin .5s 1.4s forwards}
+@keyframes gin{to{opacity:1}}
+.intro-wrap{position:relative;z-index:3;text-align:center}
+.intro-eye{font-size:.6rem;letter-spacing:.35em;color:var(--blue);opacity:0;animation:fup .6s .8s ease forwards}
+.intro-h1{font-family:var(--disp);font-size:clamp(60px,13vw,130px);color:#fff;line-height:.9;opacity:0;clip-path:inset(0 100% 0 0);animation:rev .9s 1s cubic-bezier(.77,0,.18,1) forwards;text-shadow:0 0 60px rgba(56,189,248,.2)}
+.intro-h1 span{color:var(--blue)}
+.intro-sub{font-size:.65rem;letter-spacing:.22em;color:var(--dim);opacity:0;animation:fup .6s 1.7s ease forwards;margin-top:8px}
+@keyframes rev{0%{opacity:1;clip-path:inset(0 100% 0 0)}100%{opacity:1;clip-path:inset(0 0% 0 0)}}
+@keyframes fup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.intro-loader{position:relative;z-index:3;margin-top:44px;width:220px;opacity:0;animation:fup .4s 1.9s forwards}
+.ltrack{width:100%;height:2px;background:rgba(255,255,255,.07);border-radius:1px;overflow:hidden}
+.lfill{height:100%;width:0;background:var(--blue);box-shadow:0 0 10px var(--blue);animation:lprog 1.4s 2.1s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes lprog{to{width:100%}}
+.llabel{display:flex;justify-content:space-between;margin-top:5px;font-size:.52rem;letter-spacing:.12em;color:var(--dim)}
+.intro-cta{position:relative;z-index:3;margin-top:28px;font-size:.72rem;letter-spacing:.25em;color:var(--gold);opacity:0;cursor:pointer;border:1px solid rgba(251,191,36,.3);padding:10px 28px;border-radius:4px;animation:fup .5s 3.6s forwards,pgold 1.5s 3.6s infinite;display:none}
+@keyframes pgold{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.35)}50%{box-shadow:0 0 0 8px rgba(251,191,36,0)}}
+#intro.exit{animation:iex .65s cubic-bezier(.77,0,.18,1) forwards}
+@keyframes iex{0%{opacity:1;transform:scale(1)}60%{opacity:1;transform:scale(1.03)}100%{opacity:0;transform:scale(.97);pointer-events:none}}
+
+/* ── Toast ── */
+#toasts{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{font-family:var(--disp);font-size:1.1rem;letter-spacing:.04em;padding:10px 18px;border-radius:8px;color:#111;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:t-in-out 3s forwards;pointer-events:none}
+@keyframes t-in-out{0%{transform:translateX(110%);opacity:0}10%{transform:translateX(0);opacity:1}80%{transform:translateX(0);opacity:1}100%{transform:translateX(110%);opacity:0}}
+
+/* ── Game layout ── */
+#game{width:100%;max-width:860px;padding:14px 18px 24px;display:flex;flex-direction:column;gap:8px;opacity:0;transition:opacity .5s .3s}
+#game.vis{opacity:1}
+@keyframes shake{0%{transform:translate(0,0)}15%{transform:translate(-5px,-2px) rotate(-.8deg)}30%{transform:translate(5px,3px) rotate(.8deg)}45%{transform:translate(-3px,1px) rotate(-.4deg)}60%{transform:translate(3px,-2px) rotate(.4deg)}80%{transform:translate(-2px,2px)}100%{transform:translate(0,0)}}
+#game.shake{animation:shake .45s ease-out}
+.top-bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:10px 20px}
+.hstat{display:flex;flex-direction:column}
+.hstat.r{text-align:right;align-items:flex-end}
+.slbl{font-size:.52rem;color:var(--dim);letter-spacing:.09em;text-transform:uppercase}
+.sval{font-size:1.1rem;font-weight:700;color:var(--blue);line-height:1.2}
+.badge{font-size:.6rem;font-weight:800;letter-spacing:.08em;padding:4px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);transition:color .2s}
+.meta-bar{display:flex;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:8px 16px;gap:8px}
+.streak-chip{display:flex;align-items:center;gap:6px;font-size:.62rem;color:var(--gold)}
+.streak-fire{font-size:1rem;animation:firepulse 1s infinite alternate}
+@keyframes firepulse{from{transform:scale(1)}to{transform:scale(1.2)}}
+.xp-wrap{flex:1;display:flex;flex-direction:column;gap:3px}
+.xp-label{font-size:.5rem;color:var(--dim);letter-spacing:.08em;display:flex;justify-content:space-between}
+.xp-track{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--blue));border-radius:2px;transition:width .5s ease;box-shadow:0 0 8px rgba(167,139,250,.5)}
+.rank-badge{font-family:var(--disp);font-size:.9rem;color:var(--purple);letter-spacing:.05em;white-space:nowrap}
+.speed-rail{height:3px;background:rgba(255,255,255,.04);border-radius:2px;overflow:hidden}
+#speedFill{height:100%;width:0%;border-radius:2px;background:var(--blue);box-shadow:0 0 10px var(--blue);transition:width .3s ease,background .4s,box-shadow .4s}
+.cframe{position:relative;background:#000;border-radius:var(--r);overflow:hidden;box-shadow:0 20px 50px -10px rgba(0,0,0,.8)}
+canvas{display:block;width:100%;height:auto}
+.cash-pop{position:absolute;font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--green);pointer-events:none;text-shadow:0 0 10px var(--green);animation:cpop .9s ease forwards;z-index:10;white-space:nowrap}
+@keyframes cpop{0%{opacity:1;transform:translateY(0) scale(1)}20%{transform:translateY(-10px) scale(1.2)}100%{opacity:0;transform:translateY(-48px) scale(.85)}}
+.combo-pop{position:absolute;font-family:var(--disp);font-size:clamp(18px,4vw,32px);pointer-events:none;animation:combopop .7s ease forwards;z-index:11}
+@keyframes combopop{0%{opacity:1;transform:scale(.6)}30%{transform:scale(1.15)}70%{opacity:1}100%{opacity:0;transform:scale(.9) translateY(-20px)}}
+.hs-flash{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:5;opacity:0}
+.hs-flash.show{animation:hsburst 2.2s ease forwards}
+@keyframes hsburst{0%{opacity:0}10%{opacity:1}75%{opacity:1}100%{opacity:0}}
+.hs-text{font-family:var(--disp);font-size:clamp(26px,5.5vw,48px);color:var(--gold);text-shadow:0 0 30px rgba(251,191,36,.8),0 0 60px rgba(251,191,36,.3);letter-spacing:.1em;animation:hsscale .4s ease forwards}
+@keyframes hsscale{0%{transform:scale(.5)}70%{transform:scale(1.08)}100%{transform:scale(1)}}
+.hs-sub{font-family:var(--mono);font-size:.6rem;color:var(--gold);opacity:.65;letter-spacing:.22em;margin-top:5px}
+.ctrl{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:none;padding:13px 10px;border-radius:var(--r);font-family:var(--mono);font-weight:700;font-size:.8rem;letter-spacing:.06em;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:transform .12s,filter .12s,box-shadow .2s;text-transform:uppercase}
+.btn:active:not(:disabled){transform:scale(.96)}
+.btn:disabled{opacity:.28;filter:grayscale(1);cursor:not-allowed}
+.btn-go{background:var(--green);color:#052e16}
+.btn-get{background:var(--gold);color:#3a1a00}
+.bsub{font-size:.54rem;opacity:.72;font-weight:400;letter-spacing:.04em;text-transform:none}
+@keyframes pgoldpulse{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.5)}50%{box-shadow:0 0 0 10px rgba(251,191,36,0)}}
+.pulse{animation:pgoldpulse 1.6s infinite}
+.upg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ucard{background:var(--panel);border:1px solid var(--border);padding:10px 6px 8px;border-radius:var(--r);font-family:var(--mono);color:var(--text);cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;transition:border-color .2s,opacity .2s,transform .1s,box-shadow .2s;position:relative;overflow:hidden}
+.ucard::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.03),transparent);pointer-events:none}
+.ucard:hover:not(.locked){border-color:var(--blue);box-shadow:0 0 16px rgba(56,189,248,.15)}
+.ucard:active:not(.locked){transform:scale(.97)}
+.ucard.locked{opacity:.35;cursor:not-allowed}
+.ucard.maxed{border-color:var(--gold)!important;box-shadow:0 0 16px rgba(251,191,36,.2)!important}
+.ulbl{font-size:.52rem;color:var(--dim);text-transform:uppercase;letter-spacing:.07em}
+.ucost{font-size:.8rem;font-weight:700;color:var(--gold)}
+.ucard.maxed .ucost{font-size:.65rem;letter-spacing:.08em}
+.pips{display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;justify-content:center}
+.pip{width:7px;height:3px;border-radius:1px;background:rgba(255,255,255,.08);transition:background .2s,box-shadow .2s}
+.pip.on{background:var(--blue);box-shadow:0 0 4px var(--blue)}
+.pip.gold{background:var(--gold);box-shadow:0 0 4px var(--gold)}
+.panel-tabs{display:flex;gap:6px;margin-top:2px}
+.tab{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:8px 8px 0 0;padding:7px;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-align:center;color:var(--dim);transition:.15s}
+.tab.active{background:var(--panel2);border-bottom-color:var(--panel2);color:var(--text)}
+.tab-content{background:var(--panel2);border:1px solid var(--border);border-radius:0 0 var(--r) var(--r);padding:10px;display:none}
+.tab-content.active{display:block}
+.skin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.skin-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:.15s;position:relative}
+.skin-card:hover{border-color:var(--blue)}
+.skin-card.owned{border-color:var(--green)}
+.skin-card.equipped{border-color:var(--gold);box-shadow:0 0 12px rgba(251,191,36,.25)}
+.skin-preview{width:28px;height:40px;border-radius:3px;position:relative}
+.skin-name{font-size:.5rem;color:var(--mid);text-align:center;letter-spacing:.05em;text-transform:uppercase}
+.skin-price{font-size:.58rem;color:var(--gold);font-weight:700}
+.skin-owned-badge{position:absolute;top:3px;right:3px;font-size:.42rem;color:var(--green)}
+.mission-list{display:flex;flex-direction:column;gap:6px}
+.mission{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px}
+.m-icon{font-size:1.1rem;flex-shrink:0}
+.m-info{flex:1}
+.m-name{font-size:.62rem;color:var(--text);margin-bottom:2px}
+.m-prog-track{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.m-prog-fill{height:100%;background:var(--blue);border-radius:2px;transition:width .4s}
+.m-prog-label{font-size:.48rem;color:var(--dim);margin-top:2px}
+.m-reward{font-size:.65rem;color:var(--gold);font-weight:700;flex-shrink:0;white-space:nowrap}
+.m-claim{background:var(--green);color:#052e16;border:none;font-family:var(--mono);font-size:.55rem;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;transition:.1s;animation:pulse-g 2s infinite}
+@keyframes pulse-g{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}}
+.m-claim:active{transform:scale(.95)}
+.lb-list{display:flex;flex-direction:column;gap:5px}
+.lb-row{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:7px 10px}
+.lb-rank{font-family:var(--disp);font-size:1rem;color:var(--dim);width:24px;text-align:center;flex-shrink:0}
+.lb-rank.gold{color:var(--gold)}.lb-rank.silver{color:#94a3b8}.lb-rank.bronze{color:var(--orange)}
+.lb-name{flex:1;font-size:.62rem;color:var(--text)}
+.lb-score{font-size:.65rem;color:var(--blue);font-weight:700}
+.lb-you{border-color:var(--blue)!important;background:rgba(56,189,248,.06)!important}
+.hint{font-size:.58rem;color:var(--dim);text-align:center;letter-spacing:.06em}
+.district-list{display:flex;flex-direction:column;gap:10px}
+.district-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;transition:border-color .2s}
+.district-card.active-district{border-color:var(--blue);box-shadow:0 0 18px rgba(56,189,248,.18)}
+.district-card.locked-district{opacity:.45;filter:grayscale(.6)}
+.district-card::before{content:'';position:absolute;inset:0;opacity:.07;pointer-events:none}
+.district-icon{font-size:2rem;flex-shrink:0;width:44px;text-align:center}
+.district-info{flex:1}
+.district-name{font-family:var(--disp);font-size:1rem;letter-spacing:.05em;line-height:1}
+.district-sub{font-size:.5rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.district-perks{font-size:.52rem;color:var(--mid);margin-top:5px;line-height:1.6}
+.district-perk{display:inline-block;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:2px 7px;margin:1px 2px 1px 0}
+.district-action{flex-shrink:0;font-family:var(--mono);font-size:.6rem;font-weight:700;padding:7px 14px;border-radius:6px;border:none;cursor:pointer;letter-spacing:.07em;text-transform:uppercase;transition:.15s}
+.district-action.buy{background:var(--gold);color:#1a0e00}
+.district-action.enter{background:var(--blue);color:#001a2e}
+.district-action.current{background:rgba(34,197,94,.15);color:var(--green);border:1px solid var(--green);cursor:default}
+.district-req{font-size:.48rem;color:var(--dim);margin-top:3px}
+.audio-btn{background:#3b82f6;color:#fff;margin:0 auto;display:block;width:fit-content;font-size:.75rem;padding:8px 18px}
+@media(max-width:600px){
+  .top-bar{grid-template-columns:1fr 1fr;padding:9px 12px}
+  .badge{grid-column:span 2;order:-1;text-align:center}
+  .upg-grid{grid-template-columns:1fr}
+  .skin-grid{grid-template-columns:repeat(3,1fr)}
+  .btn{padding:11px 8px;font-size:.73rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ INTRO ════════════════════════════════════════════════════ -->
+<div id="intro">
+  <div class="city-bg" id="cityBg"></div>
+  <div class="ground-glow"></div>
+  <div class="intro-wrap">
+    <div class="intro-eye">— KURO DIGITAL PRESENTS —</div>
+    <div class="intro-h1">KURO<br><span>RUNNER</span></div>
+    <div class="intro-sub">RUN · EARN · DOMINATE · ASCEND</div>
+  </div>
+  <div class="intro-loader">
+    <div class="ltrack"><div class="lfill"></div></div>
+    <div class="llabel"><span id="loadMsg">INITIALIZING SYSTEMS</span><span id="loadPct">0%</span></div>
+  </div>
+  <div class="intro-cta" id="introCta" style="display:none;opacity:0;">▶ &nbsp;PRESS TO ENTER</div>
+</div>
+
+<!-- ═══ TOAST HOST ════════════════════════════════════════════════ -->
+<div id="toasts"></div>
+
+<!-- ═══ GAME ═════════════════════════════════════════════════════ -->
+<div id="game">
+  <div class="top-bar">
+    <div class="hstat"><span class="slbl">Capital</span><span class="sval" id="capDisplay">$0</span></div>
+    <div class="badge" id="stateBadge">IDLE</div>
+    <div class="hstat r"><span class="slbl">Best Score</span><span class="sval" id="bestDisplay">0</span></div>
+  </div>
+  <div class="meta-bar">
+    <div class="streak-chip"><span class="streak-fire">🔥</span><span>1 DAY STREAK</span></div>
+    <div class="xp-wrap">
+      <div class="xp-label"><span>RANK XP</span><span id="xpLabel">0 / 80</span></div>
+      <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+    </div>
+    <div class="rank-badge" id="rankBadge">ROOKIE</div>
+  </div>
+  <div class="speed-rail"><div id="speedFill"></div></div>
+  <div class="cframe" id="cframe">
+    <canvas id="gc" width="800" height="380"></canvas>
+    <div class="hs-flash" id="hsFlash"><div class="hs-text">🏆 NEW BEST</div><div class="hs-sub">KURO RUNNER — LEVEL UP</div></div>
+  </div>
+  <div class="ctrl">
+    <button id="startBtn" class="btn btn-go"><span id="startLbl">Start Run</span><span class="bsub">Run: <span id="runDisp">0</span></span></button>
+    <button id="collectBtn" class="btn btn-get" disabled><span>Collect</span><span class="bsub" id="collectPv">$0.0 ready</span></button>
+  </div>
+  <button id="audioBtn" class="btn audio-btn">🎧 ENABLE AUDIO MODE</button>
+  <div class="upg-grid">
+    <button id="uInc" class="ucard locked"><span class="ulbl">Passive Income</span><span class="ucost" id="uIncCost">$50</span><div class="pips" id="pipInc"></div></button>
+    <button id="uJmp" class="ucard locked"><span class="ulbl">Jump Force</span><span class="ucost" id="uJmpCost">$75</span><div class="pips" id="pipJmp"></div></button>
+    <button id="uScr" class="ucard locked"><span class="ulbl">Score Multi</span><span class="ucost" id="uScrCost">$100</span><div class="pips" id="pipScr"></div></button>
+  </div>
+  <div class="panel-tabs">
+    <div class="tab active" data-tab="missions">📋 Missions</div>
+    <div class="tab" data-tab="shop">🛒 Shop</div>
+    <div class="tab" data-tab="districts">🌆 Districts</div>
+    <div class="tab" data-tab="lb">🏆 Ranks</div>
+  </div>
+  <div class="tab-content active" id="tab-missions"><div class="mission-list" id="missionList"></div></div>
+  <div class="tab-content" id="tab-shop">
+    <div style="font-size:.55rem;color:var(--dim);letter-spacing:.1em;margin-bottom:8px">RUNNER SKINS</div>
+    <div class="skin-grid" id="skinGrid"></div>
+    <div style="font-size:.55rem;color:var(--dim);letter-spacing:.1em;margin:10px 0 8px">TRAIL EFFECTS</div>
+    <div class="skin-grid" id="trailGrid"></div>
+    <div style="font-size:.55rem;color:var(--dim);letter-spacing:.1em;margin:10px 0 8px">GEAR</div>
+    <div class="skin-grid" id="gearGrid"></div>
+    <div style="font-size:.55rem;color:var(--dim);letter-spacing:.1em;margin:10px 0 8px">CHARACTERS</div>
+    <div class="skin-grid" id="avatarGrid"></div>
+  </div>
+  <div class="tab-content" id="tab-districts"><div id="districtList"></div></div>
+  <div class="tab-content" id="tab-lb"><div class="lb-list" id="lbList"></div></div>
+  <div class="hint">⬆ SPACE / TAP canvas → JUMP &nbsp;|&nbsp; 💰 COLLECT after run</div>
+</div>
+
+<script>
+(function () {
+'use strict';
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 1 — STATIC DATA
+════════════════════════════════════════════════════════════════════ */
+const C = Object.freeze({
+  GY: 310, PW: 26, PH: 30, PX: 110,
+  GRAV: 0.6, MAXFALL: 12,
+  BASESPD: 5, MAXSPD: 13, BASEMS: 1200, MINMS: 550,
+  SCORE_TO_CASH: 0.1, XP_PER_SCORE_PT: 0.05, XP_FLAT_PER_RUN: 25,
+  MAX_UPG: 10,
+  CW: 800, CH: 380,
+});
+
+const RANK_NAMES = Object.freeze(
+  ['ROOKIE','GRINDER','HUSTLER','BALLER','ELITE','LEGEND','MYTH','GOAT']
+);
+const RARITY_MULT = Object.freeze({ common: 1, rare: 2, epic: 3 });
+
+const MISSION_POOL = Object.freeze([
+  {id:'m_run1', icon:'🏃',label:'Complete your first run',    type:'runs',    target:1,    xp:30,  cash:5,  rarity:'common'},
+  {id:'m_run5', icon:'🔥',label:'Complete 5 runs',            type:'runs',    target:5,    xp:80,  cash:15, rarity:'common'},
+  {id:'m_run10',icon:'💪',label:'Complete 10 runs',           type:'runs',    target:10,   xp:150, cash:30, rarity:'common'},
+  {id:'m_b250', icon:'⭐',label:'Score 250 in one run',       type:'bestRun', target:250,  xp:50,  cash:8,  rarity:'common'},
+  {id:'m_b500', icon:'⭐',label:'Score 500 in one run',       type:'bestRun', target:500,  xp:100, cash:18, rarity:'common'},
+  {id:'m_b1k',  icon:'💫',label:'Score 1000 in one run',      type:'bestRun', target:1000, xp:200, cash:40, rarity:'rare'},
+  {id:'m_b2k',  icon:'🌟',label:'Score 2000 in one run',      type:'bestRun', target:2000, xp:400, cash:80, rarity:'epic'},
+  {id:'m_e50',  icon:'💰',label:'Collect $50 from runs',      type:'collected',target:50,  xp:60,  cash:10, rarity:'common'},
+  {id:'m_e200', icon:'💸',label:'Collect $200 from runs',     type:'collected',target:200, xp:150, cash:35, rarity:'rare'},
+  {id:'m_u2',   icon:'📈',label:'Purchase 2 upgrades',        type:'upgrades',target:2,    xp:70,  cash:12, rarity:'common'},
+  {id:'m_u5',   icon:'📈',label:'Purchase 5 upgrades',        type:'upgrades',target:5,    xp:140, cash:28, rarity:'rare'},
+  {id:'m_spd',  icon:'💨',label:'Reach max speed in a run',   type:'maxspd',  target:1,    xp:120, cash:25, rarity:'rare'},
+]);
+
+const SKINS = [
+  {id:'default',name:'RUNNER', price:0,   owned:true, body:'#38bdf8',head:'#facc15'},
+  {id:'red',    name:'HEAT',   price:200, owned:false,body:'#ef4444',head:'#fca5a5'},
+  {id:'gold',   name:'HUSTLE', price:500, owned:false,body:'#fbbf24',head:'#fef08a'},
+  {id:'purple', name:'SPECTER',price:800, owned:false,body:'#a78bfa',head:'#ddd6fe'},
+];
+const TRAILS = [
+  {id:'none',  name:'CLEAN',price:0,  owned:true, color:null},
+  {id:'blue',  name:'ICE',  price:150,owned:false,color:'rgba(56,189,248,'},
+  {id:'fire',  name:'FIRE', price:300,owned:false,color:'rgba(251,146,60,'},
+  {id:'gold',  name:'GOLD', price:600,owned:false,color:'rgba(251,191,36,'},
+];
+const GEAR = [
+  {id:'headphones',name:'HEADPHONES',price:250,owned:false},
+];
+
+const AVATARS = [
+  { id: 'hustler', name: 'HUSTLER', price: 0,    owned: true,  w: 30, h: 56, color: 'var(--blue)',   power: 'Standard' },
+  { id: 'tank',    name: 'THE TANK', price: 5000, owned: false, w: 48, h: 68, color: 'var(--purple)', power: 'High Mass' },
+  { id: 'ghost',   name: 'THE GHOST',price: 8500, owned: false, w: 26, h: 48, color: 'var(--green)',  power: 'Low Profile' }
+];
+
+const DISTRICTS = [
+  { id:'neon_quarter',  name:'NEON QUARTER',   icon:'🌃', price:0,     owned:true,  color:'#38bdf8', skyTop:'#050d1a', skyBot:'#0d1f35', groundLine:'rgba(56,189,248,0.5)',  obstacleTop:'#f87171', obstacleBot:'#b91c1c', sub:'The starting grid. Neon-lit streets.', perks:['Standard physics','Standard economy'], reqRank:0 },
+  { id:'chrome_bridge', name:'CHROME BRIDGE',  icon:'🌉', price:1500,  owned:false, color:'#94a3b8', skyTop:'#07090f', skyBot:'#141e2e', groundLine:'rgba(148,163,184,0.5)', obstacleTop:'#cbd5e1', obstacleBot:'#475569', sub:'Industrial overpass. Wind resistance.', perks:['+10% score multi','Crosswind obstacle pattern'], reqRank:3 },
+  { id:'acid_market',   name:'ACID MARKET',    icon:'🟢', price:3500,  owned:false, color:'#22c55e', skyTop:'#020b04', skyBot:'#051a09', groundLine:'rgba(34,197,94,0.5)',   obstacleTop:'#4ade80', obstacleBot:'#15803d', sub:'Underground bazaar. Chaos spawns.', perks:['+15% cash gain','High-density obstacles'], reqRank:5 },
+  { id:'violet_heights',name:'VIOLET HEIGHTS', icon:'🟣', price:6000,  owned:false, color:'#a78bfa', skyTop:'#0a0514', skyBot:'#1a0d2e', groundLine:'rgba(167,139,250,0.5)', obstacleTop:'#c4b5fd', obstacleBot:'#6d28d9', sub:'Executive tier. Audio-reactive district.', perks:['+20% audio bonus','Double bass FX'],        reqRank:8 },
+  { id:'kuro_apex',     name:'KURO APEX',      icon:'⚫', price:15000, owned:false, color:'#fbbf24', skyTop:'#000000', skyBot:'#0a0a0a', groundLine:'rgba(251,191,36,0.8)',   obstacleTop:'#fde68a', obstacleBot:'#b45309', sub:'Maximum tier. No safety net.', perks:['3× all multipliers','Legendary cosmetics'],  reqRank:12 },
+];
+  {name:'GHOST_X',   score:8840},
+  {name:'NEON_RUSH', score:7213},
+  {name:'BLAZE_99',  score:6480},
+  {name:'H$TLE_KNG', score:5920},
+  {name:'DARKRUNNER',score:4371},
+  {name:'YOU',       score:0, isYou:true},
+  {name:'SPEEDBOI',  score:3100},
+];
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 2 — GAMESTATE (clean, serializable)
+════════════════════════════════════════════════════════════════════ */
+const GS = {
+  phase: 'IDLE',
+  passiveUnlocked: false,
+  frame: 0,
+  capital: 0,
+  runScore: 0,
+  runScoreBuffer: 0,
+  totalScore: 0,
+  bestRunScore: 0,
+  playerXP: 0,
+  pendingRankUpName: null,
+  incomeLevel: 1,
+  incomeCost: 50,
+  jumpLevel: 1,
+  jumpCost: 75,
+  scoreLevel: 1,
+  scoreCost: 100,
+  equippedSkin: SKINS[0],
+  equippedTrail: TRAILS[0],
+  equippedGear: null,
+  equippedAvatar: AVATARS[0],
+  activeDistrict: DISTRICTS[0],
+  player: {
+    x: C.PX,
+    y: C.GY - C.PH,
+    w: C.PW,
+    h: C.PH,
+    vy: 0,
+    grounded: true,
+  },
+  obstacles: [],
+  particles: [],
+  groundOffset: 0,
+  obstacleId: 0,
+  speed: 5,
+  spawnMs: 1200,
+  spawnTimer: 0,
+  runStart: 0,
+  newBestThisRun: false,
+  hitMaxSpd: false,
+  flawlessMult: 1.0,
+  comboJumps: 0,
+  lastJumpTime: 0,
+  mStats: { runs:0, bestRun:0, total:0, collected:0, upgrades:0, incLv:1, jmpLv:1, scrLv:1, maxspd:0 },
+  claimedMissionIds: new Set(),
+  activeMissionSlots: [null, null, null],
+  missionSlotState: [
+    { progress:0, ready:false, claimed:false },
+    { progress:0, ready:false, claimed:false },
+    { progress:0, ready:false, claimed:false },
+  ],
+  audio: {
+    bass: 0,
+    mid: 0,
+    treble: 0,
+    amplitude: 0,
+    active: false,
+    micActive: false,
+  },
+  audioFx: {
+    glowIntensity: 0,
+    bassSparkle: 0,
+    bgFlicker: 0,
+    xpBrightness: 1,
+    capitalGlow: 0,
+  },
+  sfxQueue: [],
+  toastQueue: [],
+  domEvents: [],
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 3 — INPUT STATE
+════════════════════════════════════════════════════════════════════ */
+const INPUT = {
+  jumpQueued: false, startRunIntent: false, collectIntent: false,
+  upgradeInc: false, upgradeJmp: false, upgradeScr: false,
+  buySkinId: null, equipSkinId: null,
+  buyTrailId: null, equipTrailId: null,
+  buyGearId: null, equipGearId: null,
+  buyAvatarId: null, equipAvatarId: null,
+  enableAudio: false, claimMissionSlot: null,
+  buyDistrictId: null, enterDistrictId: null,
+};
+function INPUT_flush() {
+  INPUT.jumpQueued = false; INPUT.startRunIntent = false; INPUT.collectIntent = false;
+  INPUT.upgradeInc = false; INPUT.upgradeJmp = false; INPUT.upgradeScr = false;
+  INPUT.buySkinId = null; INPUT.equipSkinId = null;
+  INPUT.buyTrailId = null; INPUT.equipTrailId = null;
+  INPUT.buyGearId = null; INPUT.equipGearId = null;
+  INPUT.buyAvatarId = null; INPUT.equipAvatarId = null;
+  INPUT.enableAudio = false; INPUT.claimMissionSlot = null;
+  INPUT.buyDistrictId = null; INPUT.enterDistrictId = null;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 4 — PURE HELPERS
+════════════════════════════════════════════════════════════════════ */
+function xpForLevel(n) { return n <= 1 ? 0 : Math.floor(80 * Math.pow(n - 1, 1.65)); }
+function getLevelFromXP(xp) { let lv = 1; while (xpForLevel(lv + 1) <= xp) lv++; return lv; }
+function getRankNameFromXP(xp) { const lv = getLevelFromXP(xp); const idx = Math.min(lv - 1, RANK_NAMES.length - 1); return RANK_NAMES[idx] + (lv > RANK_NAMES.length ? ' ' + (lv - RANK_NAMES.length + 1) : ''); }
+function getXPFraction(xp) { const lv = getLevelFromXP(xp); const base = xpForLevel(lv); const span = xpForLevel(lv + 1) - base; return span > 0 ? Math.min(1, (xp - base) / span) : 1; }
+function jumpForce(jmpLv) { return -10 - (jmpLv - 1) * 2; }
+function scoreMult(scrLv) { return 1 + (scrLv - 1) * 0.1; }
+function incomeSec(incLv) { return (incLv - 1) * 0.2; }
+function missionProgress(def, mStats) { switch (def.type) {
+  case 'runs': return mStats.runs; case 'bestRun': return mStats.bestRun;
+  case 'total': return mStats.total; case 'collected': return mStats.collected;
+  case 'upgrades': return mStats.upgrades; case 'maxspd': return mStats.maxspd;
+  default: return 0;
+} }
+function drawMissionSlot(claimedIds, activeIds, playerLevel) {
+  const available = MISSION_POOL.map((m,i)=>({m,i})).filter(({m})=>!claimedIds.has(m.id)&&!activeIds.includes(m.id));
+  if (!available.length) return null;
+  const lf = Math.min(1, (playerLevel-1)/10);
+  const weights = available.map(({m})=> m.rarity==='epic' ? 0.2+lf*0.8 : m.rarity==='rare' ? 0.3+lf*0.5 : 0.5-lf*0.2);
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random() * total;
+  for (let i=0;i<weights.length;i++) { r -= weights[i]; if (r<=0) return available[i].i; }
+  return available[0].i;
+}
+function playerCollidesWithObstacle(px, py, w, h, obstacles) {
+  for (const o of obstacles) {
+    if (px < o.x + 20 && px + w > o.x && py < C.GY && py + h > C.GY - 32) return true;
+  }
+  return false;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 5 — PERSISTENCE
+════════════════════════════════════════════════════════════════════ */
+const Persist = {
+  SAVE_VERSION: 2,
+  loadBest() { try { return parseFloat(localStorage.getItem('hc_best')||'0'); } catch { return 0; } },
+  saveBest(v) { try { localStorage.setItem('hc_best', String(v)); } catch {} },
+  loadGear() {
+    try {
+      const raw = localStorage.getItem('hc_gear');
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data.version !== this.SAVE_VERSION) { localStorage.removeItem('hc_gear'); return; }
+      data.owned.forEach(s => { const g = GEAR.find(g => g.id === s.id); if (g) g.owned = s.owned; });
+      if (data.equippedId) GS.equippedGear = GEAR.find(g => g.id === data.equippedId && g.owned) || null;
+    } catch { try { localStorage.removeItem('hc_gear'); } catch {} }
+  },
+  saveGear() {
+    try {
+      localStorage.setItem('hc_gear', JSON.stringify({
+        version: this.SAVE_VERSION,
+        owned: GEAR.map(g => ({ id: g.id, owned: g.owned })),
+        equippedId: GS.equippedGear ? GS.equippedGear.id : null,
+      }));
+    } catch {}
+  },
+  loadAvatars() {
+    try {
+      const raw = localStorage.getItem('hc_avatars');
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data.version !== this.SAVE_VERSION) { localStorage.removeItem('hc_avatars'); return; }
+      data.owned.forEach(a => { const av = AVATARS.find(av => av.id === a.id); if (av) av.owned = a.owned; });
+      if (data.equippedId) {
+        const equipped = AVATARS.find(a => a.id === data.equippedId && a.owned);
+        if (equipped) GS.equippedAvatar = equipped;
+      }
+    } catch { try { localStorage.removeItem('hc_avatars'); } catch {} }
+  },
+  saveAvatars() {
+    try {
+      localStorage.setItem('hc_avatars', JSON.stringify({
+        version: this.SAVE_VERSION,
+        owned: AVATARS.map(a => ({ id: a.id, owned: a.owned })),
+        equippedId: GS.equippedAvatar ? GS.equippedAvatar.id : null,
+      }));
+    } catch {}
+  },
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 6 — SIMULATION MODULES (SimCore, SimEco, SimMissions)
+════════════════════════════════════════════════════════════════════ */
+
+// SimInput (handles input and state changes)
+const SimInput = {
+  tick() {
+    if (INPUT.jumpQueued && GS.phase === 'RUNNING' && GS.player.grounded) {
+      const now = performance.now();
+      if (now - GS.lastJumpTime < 800) {
+        GS.comboJumps++;
+        if (GS.comboJumps >= 3) GS.domEvents.push({ type: 'comboPop', payload: { text: `${GS.comboJumps}x COMBO!`, color: 'var(--orange)' } });
+      } else GS.comboJumps = 1;
+      GS.lastJumpTime = now;
+      GS.player.vy = jumpForce(GS.jumpLevel);
+      GS.player.grounded = false;
+      for (let i = 0; i < 6; i++) GS.particles.push({ x: C.PX + C.PW/2, y: C.GY, vx: (Math.random()-0.5)*3, vy: -(Math.random()*2+1), life: 1, color: GS.equippedSkin.body, isTrail: false });
+      GS.sfxQueue.push({ type: 'jump' });
+    }
+    if (INPUT.startRunIntent) {
+      if (GS.phase === 'GAME_OVER') SimInput._returnToIdle();
+      if (GS.phase === 'IDLE') SimInput._startRun();
+    }
+    if (INPUT.collectIntent) SimInput._collectEarnings();
+    if (INPUT.upgradeInc) SimInput._upgrade('inc');
+    if (INPUT.upgradeJmp) SimInput._upgrade('jmp');
+    if (INPUT.upgradeScr) SimInput._upgrade('scr');
+    if (INPUT.buySkinId) SimInput._buySkin(INPUT.buySkinId);
+    if (INPUT.equipSkinId) SimInput._equipSkin(INPUT.equipSkinId);
+    if (INPUT.buyTrailId) SimInput._buyTrail(INPUT.buyTrailId);
+    if (INPUT.equipTrailId) SimInput._equipTrail(INPUT.equipTrailId);
+    if (INPUT.buyGearId) SimInput._buyGear(INPUT.buyGearId);
+    if (INPUT.equipGearId) SimInput._equipGear(INPUT.equipGearId);
+    if (INPUT.buyAvatarId) SimInput._buyAvatar(INPUT.buyAvatarId);
+    if (INPUT.equipAvatarId) SimInput._equipAvatar(INPUT.equipAvatarId);
+    if (INPUT.claimMissionSlot !== null) SimMissions.claim(INPUT.claimMissionSlot);
+    if (INPUT.enableAudio) SimAudio.toggle();
+    if (INPUT.buyDistrictId) SimInput._buyDistrict(INPUT.buyDistrictId);
+    if (INPUT.enterDistrictId) SimInput._enterDistrict(INPUT.enterDistrictId);
+  },
+  _startRun() {
+    GS.phase = 'RUNNING';
+    GS.runScore = 0;
+    GS.newBestThisRun = false;
+    GS.hitMaxSpd = false;
+    GS.comboJumps = 0;
+    GS.obstacles = [];
+    GS.particles = [];
+    GS.speed = C.BASESPD;
+    GS.spawnMs = C.BASEMS;
+    GS.flawlessMult = 1.0;
+    GS.obstacleId = 0;
+    GS.runStart = performance.now();
+    GS.spawnTimer = performance.now();
+    GS.player.y = C.GY - GS.equippedAvatar.h;
+    GS.player.vy = 0;
+    GS.player.grounded = true;
+  },
+  _returnToIdle() {
+    GS.phase = 'IDLE';
+    GS.player.y = C.GY - GS.equippedAvatar.h;
+    GS.player.vy = 0;
+    GS.player.grounded = true;
+    GS.obstacles = [];
+    GS.particles = [];
+  },
+  _collectEarnings() {
+    if (GS.phase === 'RUNNING') return;
+    if (GS.runScoreBuffer > 0) {
+      let bonusMult = 1;
+      if (GS.audio.active && GS.audio.mid) bonusMult = 1 + (GS.audio.mid * 0.3);
+      const gain = GS.runScoreBuffer * C.SCORE_TO_CASH * bonusMult;
+      GS.capital = Math.max(0, GS.capital + gain);
+      GS.mStats.collected += gain;
+      GS.runScoreBuffer = 0;
+      SimEco.addXP(Math.floor(gain));
+      GS.domEvents.push({ type: 'cashPop', payload: { amount: gain, leftPct: '42%' } });
+      GS.toastQueue.push({ msg: `💰 +$${gain.toFixed(1)} collected`, color: '#22c55e', cat: 'collect' });
+      GS.sfxQueue.push({ type: 'reward' });
+    }
+    if (GS.phase === 'GAME_OVER') SimInput._returnToIdle();
+  },
+  _upgrade(type) {
+    const map = { inc: { lvKey:'incomeLevel', costKey:'incomeCost', mult:1.65, label:'Income' }, jmp: { lvKey:'jumpLevel', costKey:'jumpCost', mult:1.75, label:'Jump' }, scr: { lvKey:'scoreLevel', costKey:'scoreCost', mult:1.85, label:'Score' } };
+    const cfg = map[type];
+    if (!cfg) return;
+    if (GS[cfg.lvKey] >= C.MAX_UPG) return;
+    if (GS.capital < GS[cfg.costKey]) return;
+    GS.capital = Math.max(0, GS.capital - GS[cfg.costKey]);
+    GS[cfg.lvKey]++;
+    GS[cfg.costKey] = Math.floor(GS[cfg.costKey] * cfg.mult);
+    GS.mStats.upgrades++;
+    GS.mStats.incLv = GS.incomeLevel; GS.mStats.jmpLv = GS.jumpLevel; GS.mStats.scrLv = GS.scoreLevel;
+    GS.toastQueue.push({ msg: `✨ ${cfg.label} upgraded`, color: '#a78bfa', cat: 'upg_' + type });
+    GS.sfxQueue.push({ type: 'reward' });
+  },
+  _buySkin(id) { const skin = SKINS.find(s=>s.id===id); if (!skin || skin.owned || GS.capital < skin.price) { if(skin&&!skin.owned&&GS.capital<skin.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - skin.price); skin.owned = true; GS.toastQueue.push({ msg:`✨ ${skin.name} unlocked`, color:'#fbbf24', cat:'buy_'+id }); },
+  _equipSkin(id) { const skin = SKINS.find(s=>s.id===id && s.owned); if (!skin) return; GS.equippedSkin = skin; GS.toastQueue.push({ msg:`🎨 ${skin.name} equipped`, color:'#38bdf8', cat:'equip_'+id }); },
+  _buyTrail(id) { const trail = TRAILS.find(t=>t.id===id); if (!trail || trail.owned || GS.capital < trail.price) { if(trail&&!trail.owned&&GS.capital<trail.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - trail.price); trail.owned = true; GS.toastQueue.push({ msg:`✨ ${trail.name} trail unlocked`, color:'#fbbf24', cat:'buy_'+id }); },
+  _equipTrail(id) { const trail = TRAILS.find(t=>t.id===id && t.owned); if (!trail) return; GS.equippedTrail = trail; GS.toastQueue.push({ msg:`💫 ${trail.name} trail equipped`, color:'#38bdf8', cat:'equip_'+id }); },
+  _buyGear(id) { const gear = GEAR.find(g=>g.id===id); if (!gear || gear.owned || GS.capital < gear.price) { if(gear&&!gear.owned&&GS.capital<gear.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - gear.price); gear.owned = true; Persist.saveGear(); GS.toastQueue.push({ msg:`✨ ${gear.name} unlocked`, color:'#fbbf24', cat:'buy_'+id }); },
+  _equipGear(id) { const gear = GEAR.find(g=>g.id===id && g.owned); if (!gear) return; GS.equippedGear = gear; Persist.saveGear(); GS.toastQueue.push({ msg:`🎧 ${gear.name} equipped`, color:'#38bdf8', cat:'equip_'+id }); },
+  _buyAvatar(id) { const av = AVATARS.find(a=>a.id===id); if (!av || av.owned || GS.capital < av.price) { if(av&&!av.owned&&GS.capital<av.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - av.price); av.owned = true; Persist.saveAvatars(); GS.toastQueue.push({ msg:`✨ ${av.name} unlocked`, color:'#fbbf24', cat:'buy_avatar_'+id }); },
+  _equipAvatar(id) { const av = AVATARS.find(a=>a.id===id && a.owned); if (!av) return; GS.equippedAvatar = av; GS.player.y = Math.min(GS.player.y, C.GY - av.h); if (GS.player.y + av.h > C.GY) GS.player.y = C.GY - av.h; Persist.saveAvatars(); GS.toastQueue.push({ msg:`👤 ${av.name} equipped`, color:'#38bdf8', cat:'equip_avatar_'+id }); },
+  _buyDistrict(id) {
+    const d = DISTRICTS.find(d => d.id === id);
+    if (!d || d.owned) return;
+    const playerRank = getLevelFromXP(GS.playerXP);
+    if (playerRank < d.reqRank) { GS.toastQueue.push({ msg:`🔒 Reach Rank ${d.reqRank} to unlock`, color:'#ef4444', cat:'district_rank_'+id }); return; }
+    if (GS.capital < d.price) { GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'district_broke_'+id }); return; }
+    GS.capital = Math.max(0, GS.capital - d.price);
+    d.owned = true;
+    GS.activeDistrict = d;
+    GS.toastQueue.push({ msg:`🌆 ${d.name} unlocked & activated`, color: d.color, cat:'district_buy_'+id });
+    GS.sfxQueue.push({ type: 'reward' });
+    GS.domEvents.push({ type: 'districtChanged' });
+  },
+  _enterDistrict(id) {
+    const d = DISTRICTS.find(d => d.id === id && d.owned);
+    if (!d) return;
+    if (GS.phase === 'RUNNING') { GS.toastQueue.push({ msg:'⚠ Finish your run first', color:'#fbbf24', cat:'district_running' }); return; }
+    GS.activeDistrict = d;
+    GS.obstacles = [];
+    GS.particles = [];
+    GS.toastQueue.push({ msg:`🌆 Entered ${d.name}`, color: d.color, cat:'district_enter_'+id });
+    GS.domEvents.push({ type: 'districtChanged' });
+  },
+};
+
+// SimCore (physics, obstacles)
+const SimCore = {
+  update(dt, nowMs) {
+    if (GS.phase === 'RUNNING') {
+      this._updateDifficulty(nowMs);
+      this._spawnObstacle(nowMs);
+      this._moveObstacles(dt);
+      this._updatePlayer(dt);
+      this._emitTrail();
+      this._checkNearMisses();
+      if (playerCollidesWithObstacle(GS.player.x, GS.player.y, GS.equippedAvatar.w, GS.equippedAvatar.h, GS.obstacles)) {
+        SimEco.triggerGameOver();
+      }
+    }
+    this._updateParticles(dt);
+    if (GS.phase === 'RUNNING') GS.groundOffset = (GS.groundOffset + GS.speed * 0.4) % 50;
+  },
+  _updatePlayer(dt) {
+    GS.player.vy += C.GRAV * (dt * 60);
+    if (GS.player.vy > C.MAXFALL) GS.player.vy = C.MAXFALL;
+    GS.player.y += GS.player.vy * (dt * 60);
+    const bottom = GS.player.y + GS.equippedAvatar.h;
+    if (bottom >= C.GY) {
+      GS.player.y = C.GY - GS.equippedAvatar.h;
+      GS.player.vy = 0;
+      GS.player.grounded = true;
+    }
+    if (GS.player.y < 40) GS.player.y = 40;
+  },
+  _updateDifficulty(nowMs) {
+    const step = Math.floor((nowMs - GS.runStart) / 10000);
+    GS.speed = Math.min(C.BASESPD + step * 0.85, C.MAXSPD);
+    if (GS.audio.active && GS.audio.bass) GS.speed = Math.min(C.MAXSPD, GS.speed + GS.audio.bass * 2);
+    GS.spawnMs = Math.max(C.MINMS, C.BASEMS - step * 55);
+    if (GS.speed >= C.MAXSPD - 0.05 && !GS.hitMaxSpd) {
+      GS.hitMaxSpd = true;
+      GS.mStats.maxspd = 1;
+      GS.domEvents.push({ type: 'comboPop', payload: { text: 'MAX SPEED!', color: 'var(--red)' } });
+    }
+  },
+  _spawnObstacle(nowMs) {
+    if (nowMs - GS.spawnTimer < GS.spawnMs) return;
+    // SAFETY LANE: during extreme bass spikes, widen gap to prevent unavoidable deaths
+    const bassHot = GS.audio.active && GS.audio.bass > 0.8;
+    const safeGap = bassHot ? 140 : 80; // 50%+ wider gap during bass spikes
+    const dbl = !bassHot && Math.random() < 0.15 && GS.speed > 8; // no doubles during hot bass
+    GS.obstacles.push({ x: C.CW, id: GS.obstacleId++, nearMissTriggered: false });
+    if (dbl) GS.obstacles.push({ x: C.CW + safeGap, id: GS.obstacleId++, nearMissTriggered: false });
+    GS.spawnTimer = nowMs;
+  },
+  _moveObstacles(dt) { for (const o of GS.obstacles) o.x -= GS.speed * (dt * 60); GS.obstacles = GS.obstacles.filter(o => o.x + 22 > 0); },
+  _checkNearMisses() {
+    const px = GS.player.x, py = GS.player.y, pw = GS.equippedAvatar.w, ph = GS.equippedAvatar.h;
+    for (const obs of GS.obstacles) {
+      if (obs.nearMissTriggered) continue;
+      const distX = Math.abs(px - obs.x);
+      if (distX < 50 && distX > 10) {
+        const overlapY = py < C.GY - 0 && py + ph > C.GY - 32;
+        if (overlapY && !playerCollidesWithObstacle(px, py, pw, ph, GS.obstacles)) {
+          obs.nearMissTriggered = true;
+          SimEco.addXP(5);
+          GS.toastQueue.push({ msg: '⚡ Near miss! +5 XP', color: '#fbbf24', cat: 'nearmiss_' + obs.id });
+          GS.sfxQueue.push({ type: 'reward' });
+        }
+      }
+    }
+  },
+  _emitTrail() { if (GS.equippedTrail.id === 'none') return; GS.particles.push({ x: GS.player.x + 2, y: GS.player.y + GS.equippedAvatar.h/2, vx: -(GS.speed * 0.3 + Math.random()), vy: (Math.random() - 0.5) * 0.5, life: 0.6, color: GS.equippedTrail.color + '0.7)', isTrail: true }); },
+  _updateParticles(dt) { for (const p of GS.particles) { p.x += p.vx * (dt*60); p.y += p.vy * (dt*60); p.vy += 0.08 * (dt*60); p.life -= dt * 1.5; } GS.particles = GS.particles.filter(p => p.life > 0); },
+};
+
+// SimEco (economy, scoring)
+const SimEco = {
+  update(dt) {
+    if (GS.phase === 'IDLE' && GS.passiveUnlocked && GS.runScoreBuffer === 0) {
+      let incomeMult = 1;
+      if (GS.audio.active && GS.audio.bass) incomeMult = 1 + GS.audio.bass * 0.5;
+      GS.capital += incomeSec(GS.incomeLevel) * dt * incomeMult;
+      if (GS.capital < 0) GS.capital = 0;
+    }
+    if (GS.phase === 'RUNNING') {
+      GS.flawlessMult = Math.min(2.0, GS.flawlessMult + dt * 0.05);
+      let audioFlawlessBoost = 1;
+      if (GS.audio.active && GS.audio.mid) audioFlawlessBoost = 1 + GS.audio.mid * 0.2;
+      // District multiplier: Violet Heights doubles audio bonus; Kuro Apex triples all
+      const d = GS.activeDistrict;
+      const districtScoreMult = d.id === 'kuro_apex' ? 3 : d.id === 'violet_heights' ? 1.2 : d.id === 'acid_market' ? 1.15 : d.id === 'chrome_bridge' ? 1.1 : 1;
+      const districtAudioMult = d.id === 'violet_heights' ? 2 : d.id === 'kuro_apex' ? 3 : 1;
+      const gain = 10 * scoreMult(GS.scoreLevel) * GS.flawlessMult * (audioFlawlessBoost * districtAudioMult) * districtScoreMult * dt;
+      GS.runScore += gain;
+      GS.totalScore += gain;
+      GS.mStats.total = GS.totalScore;
+      if (GS.runScore > GS.bestRunScore) {
+        GS.bestRunScore = GS.runScore;
+        Persist.saveBest(GS.bestRunScore);
+        if (!GS.newBestThisRun) { GS.newBestThisRun = true; GS.domEvents.push({ type: 'hsFlash' }); }
+      }
+    }
+  },
+  addXP(amount) {
+    amount = Math.max(0, Math.floor(amount));
+    if (!amount) return;
+    const lvBefore = getLevelFromXP(GS.playerXP);
+    GS.playerXP += amount;
+    const lvAfter = getLevelFromXP(GS.playerXP);
+    if (lvAfter > lvBefore) {
+      GS.pendingRankUpName = getRankNameFromXP(GS.playerXP);
+      GS.toastQueue.push({ msg: '✨ RANK UP — ' + GS.pendingRankUpName, color: '#a78bfa', cat: 'rankup' });
+      GS.sfxQueue.push({ type: 'reward' });
+    }
+  },
+  triggerGameOver() {
+    if (GS.phase !== 'RUNNING') return;
+    GS.phase = 'GAME_OVER';
+    GS.runScoreBuffer += GS.runScore;
+    GS.passiveUnlocked = true;
+    GS.flawlessMult = 1.0;
+    this.addXP(Math.floor(GS.runScore * C.XP_PER_SCORE_PT) + C.XP_FLAT_PER_RUN);
+    GS.mStats.runs++;
+    if (GS.runScore > GS.mStats.bestRun) GS.mStats.bestRun = GS.runScore;
+    if (GS.speed >= C.MAXSPD - 0.05) GS.mStats.maxspd = 1;
+    GS.runScore = 0;
+    GS.sfxQueue.push({ type: 'collision' });
+    GS.domEvents.push({ type: 'shake' });
+  },
+};
+
+// SimMissions
+const SimMissions = {
+  init() { const lvl = getLevelFromXP(GS.playerXP); for (let s=0; s<3; s++) { GS.activeMissionSlots[s] = drawMissionSlot(GS.claimedMissionIds, this._activeIds(), lvl); Object.assign(GS.missionSlotState[s], { progress:0, ready:false, claimed:false }); } },
+  tick() { for (let s=0; s<3; s++) { const idx = GS.activeMissionSlots[s]; if (idx===null) continue; const def = MISSION_POOL[idx]; const st = GS.missionSlotState[s]; if (st.claimed) continue; st.progress = Math.min(missionProgress(def, GS.mStats), def.target); st.ready = (st.progress >= def.target); } GS.domEvents.push({ type: 'missionsChanged' }); },
+  claim(slot) { const idx = GS.activeMissionSlots[slot]; if (idx===null) return; const def = MISSION_POOL[idx]; const st = GS.missionSlotState[slot]; if (!st.ready || st.claimed) return; const mult = RARITY_MULT[def.rarity] || 1; const xp = def.xp * mult; const cash = def.cash * mult; SimEco.addXP(xp); GS.capital = Math.max(0, GS.capital + cash); GS.domEvents.push({ type: 'cashPop', payload: { amount: cash, leftPct: '45%' } }); GS.toastQueue.push({ msg: `🏆 ${def.label} +${xp}XP +$${cash}`, color: '#22c55e', cat: 'm_' + def.id }); st.claimed = true; GS.claimedMissionIds.add(def.id); GS.domEvents.push({ type: 'missionsChanged' }); setTimeout(() => { GS.activeMissionSlots[slot] = null; GS.activeMissionSlots[slot] = drawMissionSlot(GS.claimedMissionIds, this._activeIds(), getLevelFromXP(GS.playerXP)); Object.assign(GS.missionSlotState[slot], { progress:0, ready:false, claimed:false }); SimMissions.tick(); }, 700); },
+  _activeIds() { return GS.activeMissionSlots.filter(i=>i!==null).map(i=>MISSION_POOL[i].id); },
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 7 — SimAudio MODULE (clean, isolated)
+════════════════════════════════════════════════════════════════════ */
+const SimAudio = (function() {
+  let audioCtx = null;
+  let analyser = null;
+  let dataArray = null;
+  let source = null;
+  let mediaStream = null;
+  let isInitialized = false;
+  let useFallback = false;
+  let fallbackPhase = 0;
+
+  async function init() {
+    if (isInitialized) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStream = stream;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+      isInitialized = true;
+      useFallback = false;
+      GS.audio.active = true;
+      GS.audio.micActive = true;
+    } catch (err) {
+      useFallback = true;
+      isInitialized = true;
+      GS.audio.active = true;
+      GS.audio.micActive = false;
+    }
+  }
+
+  function stop() {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(track => track.stop());
+      mediaStream = null;
+    }
+    if (audioCtx) {
+      audioCtx.close().catch(() => {});
+      audioCtx = null;
+    }
+    analyser = null;
+    dataArray = null;
+    source = null;
+    isInitialized = false;
+    useFallback = false;
+    fallbackPhase = 0;
+    GS.audio.active = false;
+    GS.audio.micActive = false;
+    GS.audio.bass = 0;
+    GS.audio.mid = 0;
+    GS.audio.treble = 0;
+    GS.audio.amplitude = 0;
+  }
+
+  async function toggle() {
+    if (isInitialized) {
+      stop();
+    } else {
+      await init();
+    }
+  }
+
+  function update() {
+    if (!isInitialized) return;
+    if (useFallback) {
+      fallbackPhase += 0.05;
+      const fake = (Math.sin(fallbackPhase) + 1) / 2;
+      GS.audio.bass = Math.max(0, fake - 0.2) * 1.25;
+      GS.audio.mid = fake * 0.8;
+      GS.audio.treble = (Math.sin(fallbackPhase * 2) + 1) / 4;
+      GS.audio.amplitude = (GS.audio.bass + GS.audio.mid + GS.audio.treble) / 3;
+      return;
+    }
+    if (!analyser || !dataArray) return;
+    analyser.getByteFrequencyData(dataArray);
+    const len = dataArray.length;
+    const bassEnd = Math.floor(len * 0.15);
+    const midEnd = Math.floor(len * 0.6);
+    let bassSum = 0, midSum = 0, trebleSum = 0;
+    for (let i = 0; i < len; i++) {
+      if (i < bassEnd) bassSum += dataArray[i];
+      else if (i < midEnd) midSum += dataArray[i];
+      else trebleSum += dataArray[i];
+    }
+    GS.audio.bass = bassSum / (bassEnd * 255);
+    GS.audio.mid = midSum / ((midEnd - bassEnd) * 255);
+    GS.audio.treble = trebleSum / ((len - midEnd) * 255);
+    GS.audio.amplitude = (GS.audio.bass + GS.audio.mid + GS.audio.treble) / 3;
+  }
+
+  return { init, stop, toggle, update, isInitialized: () => isInitialized };
+})();
+
+let _audioUpdateFrame = 0;
+function updateAudioHook() {
+  _audioUpdateFrame++;
+  if (_audioUpdateFrame % 2 !== 0) return;
+  SimAudio.update();
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 8 — SIMULATION TICK (strict order)
+════════════════════════════════════════════════════════════════════ */
+function Simulation_tick(dt, nowMs) {
+  SimInput.tick();               // input → state changes
+  SimCore.update(dt, nowMs);     // physics, obstacles
+  SimEco.update(dt);             // economy, scoring
+  SimMissions.tick();            // mission progress
+  updateAudioHook();             // audio → GS.audio
+  INPUT_flush();                 // clear consumed inputs
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 9 — RENDERER (canvas drawing)
+════════════════════════════════════════════════════════════════════ */
+const canvas = document.getElementById('gc');
+const ctx = canvas.getContext('2d');
+
+function drawProceduralHands(ctx, px, py, avatarW, avatarH, grounded, audioEnergy, frame, speed) {
+  const isRunning = (GS.phase === 'RUNNING' && speed > 0.5);
+  const isJumping = (GS.phase === 'RUNNING' && !grounded);
+  // Idle: gentle breathing oscillation on shoulder Y
+  const breath = isRunning ? 0 : Math.sin(frame * 0.05) * 2.5;
+  // Running: arm swing scales with speed; Jumping: snap to raised 🙌 position; Idle: arms close, calm
+  const swingIntensity = isRunning && grounded ? Math.min(25, speed * 1.5) : 0;
+  const swing = isRunning && grounded ? Math.sin(frame * 0.2) * swingIntensity : 0;
+  const shoulderY = py + 18 + breath;
+  const handColor = GS.equippedSkin.body;
+  ctx.save();
+  ctx.strokeStyle = handColor;
+  ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round';
+  ctx.shadowBlur = 10 * audioEnergy;
+  ctx.shadowColor = handColor;
+  if (isJumping) {
+    // 🙌 — both arms raised outward and up
+    ctx.beginPath();
+    ctx.moveTo(px, shoulderY);
+    ctx.lineTo(px - 14, shoulderY - 14);
+    ctx.lineTo(px - 18, shoulderY - 22);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(px + avatarW, shoulderY);
+    ctx.lineTo(px + avatarW + 14, shoulderY - 14);
+    ctx.lineTo(px + avatarW + 18, shoulderY - 22);
+    ctx.stroke();
+  } else if (isRunning) {
+    // Running swing
+    ctx.beginPath();
+    ctx.moveTo(px, shoulderY);
+    const lElbowX = px - 12;
+    const lElbowY = shoulderY + 10 + swing;
+    ctx.lineTo(lElbowX, lElbowY);
+    ctx.lineTo(lElbowX - 4, lElbowY + 8);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(px + avatarW, shoulderY);
+    const rElbowX = px + avatarW + 12;
+    const rElbowY = shoulderY + 10 - swing;
+    ctx.lineTo(rElbowX, rElbowY);
+    ctx.lineTo(rElbowX + 4, rElbowY + 8);
+    ctx.stroke();
+  } else {
+    // Idle breathing — arms hang naturally, subtle sway
+    const idleSway = Math.sin(frame * 0.04) * 3;
+    ctx.beginPath();
+    ctx.moveTo(px, shoulderY);
+    ctx.lineTo(px - 5, shoulderY + 10 + idleSway);
+    ctx.lineTo(px - 7, shoulderY + 18 + idleSway);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(px + avatarW, shoulderY);
+    ctx.lineTo(px + avatarW + 5, shoulderY + 10 - idleSway);
+    ctx.lineTo(px + avatarW + 7, shoulderY + 18 - idleSway);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function applyAudioFX(ctx) {
+  const p = GS.player;
+  const audio = GS.audio;
+  const amp = audio.amplitude || 0;
+  const W = ctx.canvas.width;
+  const H = ctx.canvas.height;
+
+  ctx.save();
+
+  if (amp > 0.1) {
+    ctx.fillStyle = `rgba(56, 189, 248, ${amp * 0.08})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  const centerX = p.x + p.w / 2;
+  const centerY = p.y + p.h / 2;
+  const glowRadius = 60 * amp + 20;
+  const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, glowRadius);
+  gradient.addColorStop(0, `rgba(56, 189, 248, ${amp * 0.4})`);
+  gradient.addColorStop(1, 'transparent');
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, glowRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (audio.bass > 0.3) {
+    const sparkCount = Math.min(10, Math.floor(audio.bass * 8));
+    ctx.fillStyle = `rgba(251, 191, 36, ${audio.bass})`;
+    for (let i = 0; i < sparkCount; i++) {
+      const offsetX = (Math.random() - 0.5) * 50;
+      const offsetY = (Math.random() - 0.5) * 80;
+      const size = Math.random() * 2 * audio.bass;
+      ctx.beginPath();
+      ctx.arc(centerX + offsetX, centerY + offsetY, size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  if (GS.frame % 2 === 0) {
+    const root = document.documentElement;
+    root.style.setProperty('--ui-bright', `${100 + (audio.mid * 50)}%`);
+    root.style.setProperty('--ui-glow', `${audio.mid * 15}px`);
+  }
+
+  ctx.restore();
+}
+
+const Renderer = {
+  frame: 0,
+  draw() {
+    this.frame++;
+    GS.frame = this.frame;
+    ctx.clearRect(0, 0, C.CW, C.CH);
+    this._drawSky();
+    this._drawStars();
+    this._drawCitySilhouette();
+    this._drawGroundLines();
+    this._drawGround();
+    this._drawParticles();
+    this._drawObstacles();
+    this._drawPlayerShadow();
+    this._drawAudioGlow();
+    this._drawPlayer();
+    this._drawHeadphones();
+    this._drawCanvasHUD();
+    this._drawRankUpFlash();
+    this._drawStateOverlay();
+    this._drawAudioSparkles();
+    applyAudioFX(ctx);
+  },
+  _drawSky() { const d=GS.activeDistrict; const g = ctx.createLinearGradient(0,0,0,C.CH); g.addColorStop(0,d.skyTop); g.addColorStop(1,d.skyBot); ctx.fillStyle = g; ctx.fillRect(0,0,C.CW,C.CH); },
+  _drawStars() { ctx.fillStyle='rgba(255,255,255,0.4)'; for(let i=0;i<40;i++) ctx.fillRect((i*97+13)%C.CW,(i*43+7)%(C.GY-40),1,1); },
+  _drawCitySilhouette() { const bh=[55,90,70,110,65,80,45,95,75,60,100,50,85,70,115,55]; const d=GS.activeDistrict; let bx=0; for(let i=0;i<bh.length;i++){ const bw=48+i*2; ctx.fillStyle='#0a1828'; ctx.fillRect(bx,C.GY-bh[i],bw,bh[i]); ctx.fillStyle=`${d.color}12`; for(let wy=C.GY-bh[i]+8; wy<C.GY-10; wy+=12) for(let wx=bx+4; wx<bx+bw-4; wx+=10) if(Math.sin(wx+wy)>0.3) ctx.fillRect(wx,wy,5,4); bx+=bw+2; } },
+  _drawGroundLines() { const d=GS.activeDistrict; ctx.strokeStyle=`${d.color}15`; ctx.lineWidth=1; ctx.setLineDash([25,25]); ctx.lineDashOffset=-GS.groundOffset; ctx.beginPath(); ctx.moveTo(0,C.GY+18); ctx.lineTo(C.CW,C.GY+18); ctx.stroke(); ctx.setLineDash([]); },
+  _drawGround() { const d=GS.activeDistrict; ctx.fillStyle='#121f30'; ctx.fillRect(0,C.GY,C.CW,C.CH-C.GY); const gg=ctx.createLinearGradient(0,C.GY-3,0,C.GY+2); gg.addColorStop(0,d.groundLine); gg.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=gg; ctx.fillRect(0,C.GY-3,C.CW,3); },
+  _drawParticles() { for(const p of GS.particles){ ctx.globalAlpha=p.life*(p.isTrail?0.7:1); ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,p.isTrail?4:3,p.isTrail?4:3); } ctx.globalAlpha=1; },
+  _drawObstacles() { const d=GS.activeDistrict; for(const o of GS.obstacles){ const g=ctx.createLinearGradient(o.x,C.GY-32,o.x+20,C.GY); g.addColorStop(0,d.obstacleTop); g.addColorStop(1,d.obstacleBot); ctx.shadowColor=`${d.obstacleTop}99`; ctx.shadowBlur=12; ctx.fillStyle=g; ctx.fillRect(o.x,C.GY-32,20,32); ctx.fillStyle=d.obstacleTop; ctx.fillRect(o.x+4,C.GY-38,12,7); ctx.shadowBlur=0; } },
+  _drawPlayerShadow() { ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(GS.player.x+GS.equippedAvatar.w/2, C.GY+3, 14,4,0,0,Math.PI*2); ctx.fill(); },
+  _drawAudioGlow() { const amp=GS.audio.amplitude; if(amp<=0.05) return; ctx.save(); ctx.shadowBlur=12+amp*20; ctx.shadowColor=`rgba(255,200,100,${0.3+amp*0.5})`; ctx.beginPath(); ctx.ellipse(GS.player.x+GS.equippedAvatar.w/2, GS.player.y+GS.equippedAvatar.h/2, 16+amp*12,18+amp*12,0,0,Math.PI*2); ctx.fillStyle=`rgba(255,200,100,${0.15+amp*0.25})`; ctx.fill(); ctx.restore(); },
+  _drawPlayer() {
+    const av = GS.equippedAvatar;
+    const px = GS.player.x, py = GS.player.y;
+    if (GS.speed > 15 && GS.phase === 'RUNNING') {
+      ctx.save();
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = av.color;
+      ctx.fillRect(px - GS.speed * 0.5, py, av.w, av.h);
+      ctx.restore();
+    }
+    ctx.shadowColor = av.color + '99'; ctx.shadowBlur = 14;
+    ctx.fillStyle = av.color;
+    ctx.fillRect(px, py, av.w, av.h);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = GS.equippedSkin.head;
+    ctx.fillRect(px + 5, py - 7, 17, 9);
+    ctx.fillStyle = '#fff'; ctx.fillRect(px + av.w - 7, py + 7, 6, 6);
+    ctx.fillStyle = '#000'; ctx.fillRect(px + av.w - 5, py + 9, 3, 3);
+    if (GS.phase === 'RUNNING' && GS.player.grounded) {
+      const loff = Math.sin(performance.now() / 120) * 5;
+      ctx.fillStyle = av.color;
+      ctx.fillRect(px + 3, py + av.h, 7, 6 + loff);
+      ctx.fillRect(px + av.w - 10, py + av.h, 7, 6 - loff);
+    }
+    drawProceduralHands(ctx, px, py, av.w, av.h, GS.player.grounded, GS.audio.amplitude, this.frame, GS.speed);
+  },
+  _drawHeadphones() { if (!GS.equippedGear || GS.equippedGear.id !== 'headphones') return; const hx = GS.player.x+6, hy = GS.player.y-7, hw=16, hh=9; ctx.beginPath(); ctx.moveTo(hx+hw/2-4, hy-2); ctx.quadraticCurveTo(hx+hw/2, hy-6, hx+hw/2+4, hy-2); ctx.lineWidth=2; ctx.strokeStyle='#222'; ctx.stroke(); ctx.fillStyle='#333'; ctx.beginPath(); ctx.ellipse(hx+2, hy+hh/2,3,4,0,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(hx+hw-2, hy+hh/2,3,4,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#222'; ctx.fillRect(hx+hw/2-2, hy-3,4,3); },
+  _drawAudioSparkles() { const bass=GS.audio.bass; if(bass<=0) return; const count=Math.floor(bass*3)+1; for(let i=0;i<count;i++){ ctx.fillStyle=`rgba(255,100,50,${bass*0.5})`; ctx.beginPath(); ctx.arc(GS.player.x+Math.random()*GS.equippedAvatar.w, GS.player.y+Math.random()*GS.equippedAvatar.h, 2+bass*3,0,Math.PI*2); ctx.fill(); } },
+  _drawCanvasHUD() { ctx.font='10px "Share Tech Mono",monospace'; ctx.fillStyle='rgba(148,163,184,0.5)'; ctx.textAlign='left'; ctx.fillText(`INC lv${GS.incomeLevel}  JMP lv${GS.jumpLevel}  SCR lv${GS.scoreLevel}`,10,22); ctx.fillStyle=`${GS.activeDistrict.color}99`; ctx.fillText(`◆ ${GS.activeDistrict.name}`,10,36); if(GS.phase==='RUNNING'){ ctx.textAlign='right'; ctx.fillStyle='rgba(125,211,252,0.7)'; ctx.fillText(`SPD ${GS.speed.toFixed(1)}  RUN ${Math.floor(GS.runScore)}`, C.CW-10,22); if(GS.audio.active && GS.audio.bass>0.8){ ctx.fillStyle='rgba(251,191,36,0.85)'; ctx.fillText('⚡ SAFETY LANE', C.CW-10, 36); } } },
+  _drawRankUpFlash() { if (!GS.pendingRankUpName) return; ctx.textAlign='center'; ctx.font='bold 20px "Bebas Neue",sans-serif'; ctx.fillStyle='#fbbf24'; ctx.fillText(`⬆ RANK UP — ${GS.pendingRankUpName}`, C.CW/2, C.CH/2-24); },
+  _drawStateOverlay() { ctx.textAlign='center'; if(GS.phase==='IDLE'){ ctx.font='bold 28px "Bebas Neue",sans-serif'; ctx.fillStyle='rgba(255,207,154,0.9)'; ctx.fillText('PRESS  START RUN', C.CW/2,80); if(GS.mStats.runs>0){ ctx.font='11px "Share Tech Mono",monospace'; ctx.fillStyle='rgba(148,163,184,0.45)'; ctx.fillText(`RUNS: ${GS.mStats.runs}  |  XP: ${GS.playerXP}  |  ${getRankNameFromXP(GS.playerXP)}`, C.CW/2,104); } } if(GS.phase==='GAME_OVER'){ ctx.fillStyle='rgba(0,0,0,0.65)'; ctx.fillRect(0,0,C.CW,C.CH); ctx.font='bold 40px "Bebas Neue",sans-serif'; ctx.fillStyle='#ef4444'; ctx.fillText('CRITICAL FAILURE', C.CW/2, C.CH/2-28); ctx.font='13px "Share Tech Mono",monospace'; ctx.fillStyle='#f8fafc'; ctx.fillText(`Banked: ${Math.floor(GS.runScoreBuffer)} pts → $${(GS.runScoreBuffer*C.SCORE_TO_CASH).toFixed(1)}`, C.CW/2, C.CH/2+12); ctx.font='11px "Share Tech Mono",monospace'; ctx.fillStyle='#64748b'; ctx.fillText('RETRY  or  COLLECT EARNINGS', C.CW/2, C.CH/2+38); } ctx.textAlign='left'; },
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 10 — UI SYNC (DOM updates)
+════════════════════════════════════════════════════════════════════ */
+const DOM = {
+  cap: document.getElementById('capDisplay'), runDisp: document.getElementById('runDisp'), best: document.getElementById('bestDisplay'),
+  badge: document.getElementById('stateBadge'), sfill: document.getElementById('speedFill'), startBtn: document.getElementById('startBtn'),
+  startLbl: document.getElementById('startLbl'), collectBtn: document.getElementById('collectBtn'), collectPv: document.getElementById('collectPv'),
+  uIncCost: document.getElementById('uIncCost'), uJmpCost: document.getElementById('uJmpCost'), uScrCost: document.getElementById('uScrCost'),
+  pipInc: document.getElementById('pipInc'), pipJmp: document.getElementById('pipJmp'), pipScr: document.getElementById('pipScr'),
+  uInc: document.getElementById('uInc'), uJmp: document.getElementById('uJmp'), uScr: document.getElementById('uScr'),
+  xpFill: document.getElementById('xpFill'), xpLabel: document.getElementById('xpLabel'), rankBadge: document.getElementById('rankBadge'),
+  gameEl: document.getElementById('game'), cframe: document.getElementById('cframe'), hsFlash: document.getElementById('hsFlash'),
+  toastBox: document.getElementById('toasts'), missionList: document.getElementById('missionList'), skinGrid: document.getElementById('skinGrid'),
+  trailGrid: document.getElementById('trailGrid'), gearGrid: document.getElementById('gearGrid'), avatarGrid: document.getElementById('avatarGrid'),
+  lbList: document.getElementById('lbList'), audioBtn: document.getElementById('audioBtn'),
+  districtList: document.getElementById('districtList'),
+};
+const BADGE_COL = { IDLE:'#38bdf8', RUNNING:'#22c55e', GAME_OVER:'#ef4444' };
+const TOAST_COOLDOWN = 800;
+const _toastTimes = new Map();
+function _deliverToast(msg,color,cat){ const now=Date.now(); if(now-(_toastTimes.get(cat)||0)<TOAST_COOLDOWN) return; _toastTimes.set(cat,now); const el=document.createElement('div'); el.className='toast'; el.style.background=color; el.style.color='#111'; el.textContent=msg; DOM.toastBox.appendChild(el); el.addEventListener('animationend',()=>el.remove(),{once:true}); setTimeout(()=>{ if(el.parentNode) el.remove(); },3200); }
+let _sfxCtx=null;
+function _deliverSFX(type){ try{ if(!_sfxCtx) _sfxCtx=new (window.AudioContext||window.webkitAudioContext)(); const actx=_sfxCtx; const now=actx.currentTime; const gain=actx.createGain(); gain.gain.value=0.18; gain.connect(actx.destination); const osc=actx.createOscillator(); if(type==='jump'){ osc.type='sine'; osc.frequency.setValueAtTime(440,now); osc.frequency.exponentialRampToValueAtTime(220,now+0.15); osc.connect(gain); osc.start(); osc.stop(now+0.15); }else if(type==='collision'){ osc.type='triangle'; osc.frequency.setValueAtTime(120,now); osc.frequency.exponentialRampToValueAtTime(60,now+0.2); osc.connect(gain); osc.start(); osc.stop(now+0.2); }else if(type==='reward'){ osc.type='sine'; osc.frequency.setValueAtTime(880,now); osc.frequency.exponentialRampToValueAtTime(440,now+0.1); osc.connect(gain); osc.start(); osc.stop(now+0.1); } gain.gain.exponentialRampToValueAtTime(0.0001,now+0.25); }catch{} }
+function _deliverDomEvent(ev){ if(ev.type==='cashPop'){ const d=document.createElement('div'); d.className='cash-pop'; d.textContent=`+$${typeof ev.payload.amount==='number'?ev.payload.amount.toFixed(1):ev.payload.amount}`; d.style.left=ev.payload.leftPct||`${20+Math.random()*60}%`; d.style.bottom='38%'; DOM.cframe.appendChild(d); setTimeout(()=>d.remove(),950); }else if(ev.type==='comboPop'){ const d=document.createElement('div'); d.className='combo-pop'; d.textContent=ev.payload.text; d.style.color=ev.payload.color||'var(--gold)'; d.style.left='50%'; d.style.top='35%'; d.style.transform='translateX(-50%)'; DOM.cframe.appendChild(d); setTimeout(()=>d.remove(),720); }else if(ev.type==='hsFlash'){ DOM.hsFlash.classList.remove('show'); void DOM.hsFlash.offsetWidth; DOM.hsFlash.classList.add('show'); setTimeout(()=>DOM.hsFlash.classList.remove('show'),2300); }else if(ev.type==='shake'){ DOM.gameEl.classList.remove('shake'); void DOM.gameEl.offsetWidth; DOM.gameEl.classList.add('shake'); setTimeout(()=>DOM.gameEl.classList.remove('shake'),460); }else if(ev.type==='missionsChanged'){ UISync.renderMissions(); }else if(ev.type==='districtChanged'){ UISync.renderDistricts(); } }
+function _renderPips(el,lv,maxed){ const MAX=C.MAX_UPG; if(el.children.length!==MAX){ el.innerHTML=''; for(let i=0;i<MAX;i++){ const p=document.createElement('div'); p.className='pip'; el.appendChild(p); } } for(let i=0;i<MAX;i++) el.children[i].className='pip'+(i<lv?(maxed?' gold':' on'):''); }
+
+const UISync = {
+  sync(){ if(GS.capital<0) GS.capital=0; DOM.cap.textContent=`$${Math.floor(GS.capital)}`; DOM.runDisp.textContent=Math.floor(GS.runScore); DOM.best.textContent=Math.floor(GS.bestRunScore); DOM.badge.textContent=GS.phase; DOM.badge.style.color=BADGE_COL[GS.phase]||'#fff'; const spPct=Math.max(0,((GS.speed-C.BASESPD)/(C.MAXSPD-C.BASESPD))*100); DOM.sfill.style.width=GS.phase==='RUNNING'?`${spPct}%`:'0%'; const hue=spPct<40?`hsl(200,88%,65%)`:spPct<75?`hsl(${200-spPct*1.8|0},88%,62%)`:`hsl(10,85%,60%)`; DOM.sfill.style.background=hue; DOM.sfill.style.boxShadow=`0 0 10px ${hue}`; DOM.startBtn.disabled=GS.phase==='RUNNING'; DOM.startLbl.textContent=GS.phase==='GAME_OVER'?'Retry':'Start Run'; const canCollect=GS.phase!=='RUNNING'&&GS.runScoreBuffer>0; DOM.collectBtn.disabled=!canCollect; DOM.collectPv.textContent=`$${(GS.runScoreBuffer*C.SCORE_TO_CASH).toFixed(1)} ready`; DOM.collectBtn.classList.toggle('pulse',canCollect); const iM=GS.incomeLevel>=C.MAX_UPG, jM=GS.jumpLevel>=C.MAX_UPG, sM=GS.scoreLevel>=C.MAX_UPG; DOM.uIncCost.textContent=iM?'MAX OUT':`$${GS.incomeCost}`; DOM.uJmpCost.textContent=jM?'MAX OUT':`$${GS.jumpCost}`; DOM.uScrCost.textContent=sM?'MAX OUT':`$${GS.scoreCost}`; DOM.uInc.classList.toggle('locked',iM||GS.capital<GS.incomeCost); DOM.uJmp.classList.toggle('locked',jM||GS.capital<GS.jumpCost); DOM.uScr.classList.toggle('locked',sM||GS.capital<GS.scoreCost); DOM.uInc.classList.toggle('maxed',iM); DOM.uJmp.classList.toggle('maxed',jM); DOM.uScr.classList.toggle('maxed',sM); _renderPips(DOM.pipInc,GS.incomeLevel,iM); _renderPips(DOM.pipJmp,GS.jumpLevel,jM); _renderPips(DOM.pipScr,GS.scoreLevel,sM); const xpPct=Math.round(getXPFraction(GS.playerXP)*100); DOM.xpFill.style.width=xpPct+'%'; const lv=getLevelFromXP(GS.playerXP); const base=xpForLevel(lv), span=xpForLevel(lv+1)-base; DOM.xpLabel.textContent=`${Math.max(0,GS.playerXP-base)} / ${Math.max(1,span)} XP`; DOM.rankBadge.textContent=getRankNameFromXP(GS.playerXP); DOM.xpFill.style.filter=GS.audioFx.xpBrightness>1?`brightness(${GS.audioFx.xpBrightness})`:''; DOM.cap.style.textShadow=GS.audioFx.capitalGlow>0?`0 0 ${GS.audioFx.capitalGlow}px #fbbf24`:''; if(GS.pendingRankUpName) GS.pendingRankUpName=null; if(GS.audio.active){ DOM.audioBtn.textContent=GS.audio.micActive?'🎤 AUDIO ACTIVE':'🎵 BEAT SIMULATION ON'; DOM.audioBtn.disabled=false; DOM.audioBtn.style.opacity='1'; }else{ DOM.audioBtn.textContent='🎧 ENABLE AUDIO MODE'; DOM.audioBtn.disabled=false; DOM.audioBtn.style.opacity='1'; } for(const sfx of GS.sfxQueue) _deliverSFX(sfx.type); GS.sfxQueue.length=0; for(const ev of GS.domEvents) _deliverDomEvent(ev); GS.domEvents.length=0; for(const t of GS.toastQueue) _deliverToast(t.msg,t.color,t.cat); GS.toastQueue.length=0; },
+  renderMissions(){ DOM.missionList.innerHTML=''; const rarityColor={ common:'#94a3b8', rare:'#a78bfa', epic:'#fbbf24' }; for(let s=0;s<3;s++){ const idx=GS.activeMissionSlots[s]; if(idx===null){ const empty=document.createElement('div'); empty.style.cssText='padding:10px;font-size:.62rem;color:var(--dim);text-align:center'; empty.textContent='— All missions complete. More coming soon —'; DOM.missionList.appendChild(empty); continue; } const def=MISSION_POOL[idx], st=GS.missionSlotState[s]; const pct=Math.min(100,(st.progress/def.target)*100).toFixed(1); const mult=RARITY_MULT[def.rarity]||1; const row=document.createElement('div'); row.className='mission'; row.innerHTML=`<span class="m-icon">${def.icon}</span><div class="m-info"><div class="m-name">${def.label}<span style="font-size:.5rem;color:${rarityColor[def.rarity]}">[${def.rarity.toUpperCase()}]</span></div><div class="m-prog-track"><div class="m-prog-fill" style="width:${pct}%;background:${st.ready?'var(--green)':'var(--blue)'}"></div></div><div class="m-prog-label">${Math.floor(st.progress)} / ${def.target}</div></div><span class="m-reward">+$${def.cash*mult}</span>`; if(st.ready&&!st.claimed){ const btn=document.createElement('button'); btn.className='m-claim'; btn.textContent='CLAIM'; btn.onclick=(function(slot){ return function(e){ e.stopPropagation(); INPUT.claimMissionSlot=slot; }; })(s); row.appendChild(btn); }else if(st.claimed){ const ck=document.createElement('span'); ck.textContent='✓'; ck.style.cssText='color:var(--green);font-size:1rem;font-weight:bold;'; row.appendChild(ck); } DOM.missionList.appendChild(row); } },
+  renderShop(){ DOM.skinGrid.innerHTML=''; SKINS.forEach(s=>{ const card=document.createElement('div'); card.className='skin-card'+(s.owned?' owned':'')+(GS.equippedSkin.id===s.id?' equipped':''); card.innerHTML=`<div class="skin-preview" style="background:${s.body};box-shadow:0 0 8px ${s.body}44"><div style="position:absolute;top:2px;left:50%;transform:translateX(-50%);width:12px;height:7px;background:${s.head};border-radius:2px"></div></div><span class="skin-name">${s.name}</span><span class="skin-price">${s.owned?(GS.equippedSkin.id===s.id?'ON':'USE'):'$'+s.price}</span>${s.owned&&GS.equippedSkin.id===s.id?'<span class="skin-owned-badge">✓</span>':''}`; card.addEventListener('click',()=>{ if(!s.owned) INPUT.buySkinId=s.id; else INPUT.equipSkinId=s.id; }); DOM.skinGrid.appendChild(card); }); DOM.trailGrid.innerHTML=''; TRAILS.forEach(t=>{ const card=document.createElement('div'); card.className='skin-card'+(t.owned?' owned':'')+(GS.equippedTrail.id===t.id?' equipped':''); const clr=t.color?t.color+'0.8)':'rgba(100,100,100,0.5)'; card.innerHTML=`<div class="skin-preview" style="background:linear-gradient(90deg,${clr},transparent);border-radius:3px"></div><span class="skin-name">${t.name}</span><span class="skin-price">${t.owned?(GS.equippedTrail.id===t.id?'ON':'USE'):'$'+t.price}</span>${t.owned&&GS.equippedTrail.id===t.id?'<span class="skin-owned-badge">✓</span>':''}`; card.addEventListener('click',()=>{ if(!t.owned) INPUT.buyTrailId=t.id; else INPUT.equipTrailId=t.id; }); DOM.trailGrid.appendChild(card); }); DOM.gearGrid.innerHTML=''; GEAR.forEach(g=>{ const card=document.createElement('div'); card.className='skin-card'+(g.owned?' owned':'')+(GS.equippedGear&&GS.equippedGear.id===g.id?' equipped':''); card.innerHTML=`<div class="skin-preview" style="background:linear-gradient(135deg,#444,#222);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🎧</div><span class="skin-name">${g.name}</span><span class="skin-price">${g.owned?(GS.equippedGear&&GS.equippedGear.id===g.id?'ON':'USE'):'$'+g.price}</span>${g.owned&&GS.equippedGear&&GS.equippedGear.id===g.id?'<span class="skin-owned-badge">✓</span>':''}`; card.addEventListener('click',()=>{ if(!g.owned) INPUT.buyGearId=g.id; else INPUT.equipGearId=g.id; }); DOM.gearGrid.appendChild(card); }); DOM.avatarGrid.innerHTML=''; AVATARS.forEach(a=>{ const card=document.createElement('div'); card.className='skin-card'+(a.owned?' owned':'')+(GS.equippedAvatar.id===a.id?' equipped':''); card.innerHTML=`<div class="skin-preview" style="background:${a.color};border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;">👤</div><span class="skin-name">${a.name}</span><span class="skin-price">${a.owned?(GS.equippedAvatar.id===a.id?'ON':'USE'):'$'+a.price}</span>${a.owned&&GS.equippedAvatar.id===a.id?'<span class="skin-owned-badge">✓</span>':''}`; card.addEventListener('click',()=>{ if(!a.owned) INPUT.buyAvatarId=a.id; else INPUT.equipAvatarId=a.id; }); DOM.avatarGrid.appendChild(card); }); },
+  renderLB(){ const data=LB_MOCK.map(r=>({...r})); data.find(r=>r.isYou).score=Math.floor(GS.bestRunScore); const sorted=data.sort((a,b)=>b.score-a.score); DOM.lbList.innerHTML=''; sorted.forEach((row,i)=>{ const rc=i===0?'gold':i===1?'silver':i===2?'bronze':''; const div=document.createElement('div'); div.className='lb-row'+(row.isYou?' lb-you':''); div.innerHTML=`<div class="lb-rank ${rc}">${i+1}</div><div class="lb-name">${row.isYou?'▶ '+row.name:row.name}</div><div class="lb-score">${row.score.toLocaleString()}</div>`; DOM.lbList.appendChild(div); }); },
+  renderDistricts() {
+    if (!DOM.districtList) return;
+    DOM.districtList.innerHTML = '';
+    const playerRank = getLevelFromXP(GS.playerXP);
+    const wrap = document.createElement('div');
+    wrap.className = 'district-list';
+    DISTRICTS.forEach(d => {
+      const isActive = GS.activeDistrict.id === d.id;
+      const rankLocked = !d.owned && playerRank < d.reqRank;
+      const card = document.createElement('div');
+      card.className = 'district-card' + (isActive ? ' active-district' : '') + (rankLocked ? ' locked-district' : '');
+      card.style.borderColor = isActive ? d.color : '';
+      card.style.setProperty('--district-color', d.color);
+      // Gradient accent strip
+      card.style.backgroundImage = isActive ? `linear-gradient(135deg, ${d.color}10, transparent 60%)` : '';
+      // Build perk pills
+      const perkHtml = d.perks.map(p => `<span class="district-perk">${p}</span>`).join('');
+      // Multiplier badge
+      const multMap = { kuro_apex:'3× ALL', violet_heights:'2× AUDIO', acid_market:'+15% $', chrome_bridge:'+10% SCR', neon_quarter:'BASE' };
+      const multLabel = multMap[d.id] || '';
+      // Action button
+      let actionHtml = '';
+      if (isActive) {
+        actionHtml = `<button class="district-action current" disabled>ACTIVE</button>`;
+      } else if (d.owned) {
+        actionHtml = `<button class="district-action enter" data-id="${d.id}">ENTER</button>`;
+      } else if (rankLocked) {
+        actionHtml = `<div style="text-align:center"><button class="district-action" style="background:rgba(255,255,255,.05);color:var(--dim);border:1px solid var(--border);cursor:not-allowed" disabled>🔒 RANK ${d.reqRank}</button></div>`;
+      } else {
+        actionHtml = `<button class="district-action buy" data-id="${d.id}">$${d.price.toLocaleString()}</button>`;
+      }
+      card.innerHTML = `
+        <div class="district-icon" style="text-shadow:0 0 12px ${d.color}">${d.icon}</div>
+        <div class="district-info">
+          <div class="district-name" style="color:${d.color}">${d.name}</div>
+          <div class="district-sub">${d.sub}</div>
+          <div class="district-perks">${perkHtml}<span class="district-perk" style="color:${d.color};border-color:${d.color}44">${multLabel}</span></div>
+          ${rankLocked ? `<div class="district-req">⬆ Reach Rank ${d.reqRank} to unlock</div>` : ''}
+        </div>
+        <div style="flex-shrink:0">${actionHtml}</div>`;
+      // Wire buttons
+      const buyBtn = card.querySelector('.district-action.buy');
+      if (buyBtn) buyBtn.addEventListener('click', () => { INPUT.buyDistrictId = d.id; });
+      const enterBtn = card.querySelector('.district-action.enter');
+      if (enterBtn) enterBtn.addEventListener('click', () => { INPUT.enterDistrictId = d.id; });
+      wrap.appendChild(card);
+    });
+    DOM.districtList.appendChild(wrap);
+  },
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 11 — EVENT WIRING
+════════════════════════════════════════════════════════════════════ */
+function wireEvents() {
+  window.addEventListener('keydown', e => { if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); INPUT.jumpQueued = true; } });
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); INPUT.jumpQueued = true; }, { passive: false });
+  canvas.addEventListener('mousedown', e => { e.preventDefault(); INPUT.jumpQueued = true; });
+  DOM.startBtn.onclick = () => { INPUT.startRunIntent = true; };
+  DOM.collectBtn.onclick = () => { INPUT.collectIntent = true; };
+  DOM.audioBtn.onclick = async () => { await SimAudio.toggle(); };
+  DOM.uInc.onclick = () => { INPUT.upgradeInc = true; };
+  DOM.uJmp.onclick = () => { INPUT.upgradeJmp = true; };
+  DOM.uScr.onclick = () => { INPUT.upgradeScr = true; };
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const tc = document.getElementById('tab-' + tab.dataset.tab);
+      if (tc) tc.classList.add('active');
+      if (tab.dataset.tab === 'missions') UISync.renderMissions();
+      if (tab.dataset.tab === 'shop') UISync.renderShop();
+      if (tab.dataset.tab === 'districts') UISync.renderDistricts();
+      if (tab.dataset.tab === 'lb') UISync.renderLB();
+    });
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 12 — INTRO ORCHESTRATION
+════════════════════════════════════════════════════════════════════ */
+function runIntro() { const bg=document.getElementById('cityBg'); let x=0; while(x<window.innerWidth+80){ const w=28+Math.random()*60|0, h=55+Math.random()*170|0; const el=document.createElement('div'); el.className='bld'; el.style.cssText=`width:${w}px;height:${h}px;margin-right:${1+Math.random()*4|0}px`; bg.appendChild(el); x+=w+5; } const LOAD_MSGS=['INITIALIZING KURO ENGINE','RENDERING NEON QUARTER','CALIBRATING SAFETY LANE','SYNCING AUDIO NEON-LINK','LOADING DISTRICTS','SPAWNING OBSTACLES','PRIMING ECONOMY GRID','KURO RUNNER — READY']; const msgEl=document.getElementById('loadMsg'); const pctEl=document.getElementById('loadPct'); const ctaEl=document.getElementById('introCta'); let mi=0,pct=0,ctaReady=false; const mt=setInterval(()=>{ if(++mi<LOAD_MSGS.length) msgEl.textContent=LOAD_MSGS[mi]; },380); const pt=setInterval(()=>{ pct=Math.min(pct+(Math.random()*11|0)+1,100); pctEl.textContent=pct+'%'; if(pct>=100){ clearInterval(pt); clearInterval(mt); msgEl.textContent='KURO RUNNER — READY'; setTimeout(()=>{ ctaEl.style.display='block'; ctaEl.style.opacity='1'; ctaReady=true; },400); } },110); let gone=false; function enter(){ if(gone||!ctaReady) return; gone=true; const intro=document.getElementById('intro'); intro.classList.add('exit'); document.getElementById('game').classList.add('vis'); setTimeout(()=>{ if(intro.parentNode) intro.parentNode.removeChild(intro); },700); } ctaEl.addEventListener('click',enter); document.addEventListener('keydown',function onKey(e){ if(ctaReady&&!gone){ document.removeEventListener('keydown',onKey); enter(); } }); }
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 13 — MAIN LOOP
+════════════════════════════════════════════════════════════════════ */
+let _lastF = performance.now();
+let _uiFrame = 0;
+function mainLoop() {
+  const nowMs = performance.now();
+  const dt = Math.min((nowMs - _lastF) / 1000, 0.1);
+  _lastF = nowMs;
+  Simulation_tick(dt, nowMs);
+  Renderer.draw();
+  _uiFrame++;
+  if (_uiFrame % 3 === 0) UISync.sync();
+  requestAnimationFrame(mainLoop);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 14 — INITIALISATION
+════════════════════════════════════════════════════════════════════ */
+(function init() {
+  GS.bestRunScore = Persist.loadBest();
+  Persist.loadGear();
+  Persist.loadAvatars();
+  SimMissions.init();
+  UISync.renderShop();
+  UISync.renderLB();
+  UISync.renderMissions();
+  UISync.renderDistricts();
+  wireEvents();
+  runIntro();
+  requestAnimationFrame(mainLoop);
+})();
+
+})();
+</script>
+</body>
+</html>
