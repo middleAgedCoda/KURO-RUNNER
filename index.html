@@ -1210,68 +1210,6 @@ function mainLoop() {
   runIntro();
   requestAnimationFrame(mainLoop);
 })();
-/* ════════════════════════════════════════════════════════════════════
-   ASSET EXPORTER: RUN IN CONSOLE TO GENERATE LOGOS
-════════════════════════════════════════════════════════════════════ */
-function exportKuroAssets() {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    // 1. Generate OG:IMAGE (1200 x 630)
-    canvas.width = 1200; canvas.height = 630;
-    ctx.fillStyle = '#05070a';
-    ctx.fillRect(0, 0, 1200, 630);
-    
-    // Add subtle scanlines
-    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-    ctx.lineWidth = 1;
-    for(let i=0; i<canvas.height; i+=4) {
-        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
-    }
-
-    // The "Fractured K" Logo
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 40;
-    ctx.lineCap = 'square';
-    // Vertical Stem
-    ctx.beginPath(); ctx.moveTo(450, 200); ctx.lineTo(450, 430); ctx.stroke();
-    // Arms (Glitched Offset)
-    ctx.beginPath(); ctx.moveTo(465, 315); ctx.lineTo(600, 200); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(475, 315); ctx.lineTo(610, 430); ctx.stroke();
-
-    // Text Overlay
-    ctx.fillStyle = '#e2e8f0';
-    ctx.font = '120px "Bebas Neue"';
-    ctx.fillText('KURO: RUNNER', 650, 340);
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = '30px "Share Tech Mono"';
-    ctx.fillText('// ASSET_STATUS: ACTIVE', 650, 380);
-
-    // Download OG Image
-    const ogLink = document.createElement('a');
-    ogLink.download = 'kuro-og-image.png';
-    ogLink.href = canvas.toDataURL();
-    ogLink.click();
-
-    // 2. Generate Favicon (32 x 32)
-    canvas.width = 32; canvas.height = 32;
-    ctx.fillStyle = '#05070a';
-    ctx.fillRect(0,0,32,32);
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 24px "Bebas Neue"';
-    ctx.textAlign = 'center';
-    ctx.fillText('K', 16, 26);
-
-    const favLink = document.createElement('a');
-    favLink.download = 'favicon.png';
-    favLink.href = canvas.toDataURL();
-    favLink.click();
-    
-    console.log("✅ Assets Generated. Check your downloads!");
-}
-
-// Run it!
-exportKuroAssets();
 
 })();
 </script>
