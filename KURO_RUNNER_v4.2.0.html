@@ -1399,7 +1399,8 @@ const UISync = {
       DOM.skillGrid.appendChild(node);
     });
   },
-};
+  
+  renderDistricts() {
     if (!DOM.districtList) return;
     DOM.districtList.innerHTML = '';
     const playerRank = getLevelFromXP(GS.playerXP);
