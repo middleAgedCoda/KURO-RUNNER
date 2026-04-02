@@ -280,15 +280,21 @@ canvas{display:block;width:100%;height:auto}
 }
 /* ── Landscape mobile: keep game canvas + action buttons always in view ── */
 @media(max-height:500px) and (orientation:landscape){
-  #game{padding:6px 10px 10px;gap:4px}
-  canvas{max-height:42vh}
-  .action-row{display:flex;flex-direction:row;gap:6px;flex-wrap:wrap}
-  .action-row .btn{flex:1;min-width:100px;padding:8px 6px;font-size:.68rem}
-  .upg-grid{grid-template-columns:repeat(3,1fr)}
-  .top-bar{padding:6px 10px;font-size:.7rem}
-  .xp-bar-wrap,.streak-chip{display:none} /* hide decorative elements in landscape squeeze */
-  .tabs-row{overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;flex-wrap:nowrap}
-  .tab{flex-shrink:0;padding:6px 10px;font-size:.65rem}
+  #game{padding:4px 8px 8px;gap:3px}
+  /* Maintain aspect ratio (800×380) — no stretch/pixelation */
+  canvas{height:36vh;min-height:120px;width:auto;max-width:100%;display:block;margin:0 auto}
+  .ctrl{display:flex;flex-direction:row;gap:6px}
+  .ctrl .btn{flex:1;padding:7px 6px;font-size:.68rem}
+  .upg-grid{display:none} /* hide upgrades; not essential during run */
+  .top-bar{padding:5px 10px;font-size:.68rem}
+  .meta-bar{padding:4px 10px}
+  .xp-wrap{gap:1px}
+  .xp-label,.rank-badge{font-size:.58rem}
+  .xp-track{height:4px}
+  .speed-rail{height:2px}
+  .streak-chip{display:none} /* decorative only */
+  .panel-tabs,.tab-content{display:none} /* collapse tab panel in landscape squeeze */
+  .audio-btn{padding:5px 10px;font-size:.6rem}
 }
 @media(max-width:400px){
   .top-bar{font-size:.65rem}
@@ -1042,14 +1048,14 @@ const SimInput = {
     GS.toastQueue.push({ msg: `✨ ${cfg.label} upgraded`, color: '#a78bfa', cat: 'upg_' + type });
     GS.sfxQueue.push({ type: 'reward' });
   },
-  _buySkin(id) { const skin = SKINS.find(s=>s.id===id); if (!skin || skin.owned || GS.capital < skin.price) { if(skin&&!skin.owned&&GS.capital<skin.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - skin.price); skin.owned = true; GS.toastQueue.push({ msg:`✨ ${skin.name} unlocked`, color:'#fbbf24', cat:'buy_'+id }); },
-  _equipSkin(id) { const skin = SKINS.find(s=>s.id===id && s.owned); if (!skin) return; GS.equippedSkin = skin; GS.toastQueue.push({ msg:`🎨 ${skin.name} equipped`, color:'#38bdf8', cat:'equip_'+id }); },
-  _buyTrail(id) { const trail = TRAILS.find(t=>t.id===id); if (!trail || trail.owned || GS.capital < trail.price) { if(trail&&!trail.owned&&GS.capital<trail.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - trail.price); trail.owned = true; GS.toastQueue.push({ msg:`✨ ${trail.name} trail unlocked`, color:'#fbbf24', cat:'buy_'+id }); },
-  _equipTrail(id) { const trail = TRAILS.find(t=>t.id===id && t.owned); if (!trail) return; GS.equippedTrail = trail; GS.toastQueue.push({ msg:`💫 ${trail.name} trail equipped`, color:'#38bdf8', cat:'equip_'+id }); },
-  _buyGear(id) { const gear = GEAR.find(g=>g.id===id); if (!gear || gear.owned || GS.capital < gear.price) { if(gear&&!gear.owned&&GS.capital<gear.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - gear.price); gear.owned = true; Persist.saveGear(); GS.toastQueue.push({ msg:`✨ ${gear.name} unlocked`, color:'#fbbf24', cat:'buy_'+id }); },
-  _equipGear(id) { const gear = GEAR.find(g=>g.id===id && g.owned); if (!gear) return; GS.equippedGear = gear; Persist.saveGear(); GS.toastQueue.push({ msg:`🎧 ${gear.name} equipped`, color:'#38bdf8', cat:'equip_'+id }); },
-  _buyAvatar(id) { const av = AVATARS.find(a=>a.id===id); if (!av || av.owned || GS.capital < av.price) { if(av&&!av.owned&&GS.capital<av.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - av.price); av.owned = true; Persist.saveAvatars(); GS.toastQueue.push({ msg:`✨ ${av.name} unlocked`, color:'#fbbf24', cat:'buy_avatar_'+id }); },
-  _equipAvatar(id) { const av = AVATARS.find(a=>a.id===id && a.owned); if (!av) return; GS.equippedAvatar = av; GS.player.y = Math.min(GS.player.y, C.GY - av.h); if (GS.player.y + av.h > C.GY) GS.player.y = C.GY - av.h; Persist.saveAvatars(); GS.toastQueue.push({ msg:`👤 ${av.name} equipped`, color:'#38bdf8', cat:'equip_avatar_'+id }); },
+  _buySkin(id) { const skin = SKINS.find(s=>s.id===id); if (!skin || skin.owned || GS.capital < skin.price) { if(skin&&!skin.owned&&GS.capital<skin.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - skin.price); skin.owned = true; GS.toastQueue.push({ msg:`✨ ${skin.name} unlocked`, color:'#fbbf24', cat:'buy_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _equipSkin(id) { const skin = SKINS.find(s=>s.id===id && s.owned); if (!skin) return; GS.equippedSkin = skin; GS.toastQueue.push({ msg:`🎨 ${skin.name} equipped`, color:'#38bdf8', cat:'equip_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _buyTrail(id) { const trail = TRAILS.find(t=>t.id===id); if (!trail || trail.owned || GS.capital < trail.price) { if(trail&&!trail.owned&&GS.capital<trail.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - trail.price); trail.owned = true; GS.toastQueue.push({ msg:`✨ ${trail.name} trail unlocked`, color:'#fbbf24', cat:'buy_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _equipTrail(id) { const trail = TRAILS.find(t=>t.id===id && t.owned); if (!trail) return; GS.equippedTrail = trail; GS.toastQueue.push({ msg:`💫 ${trail.name} trail equipped`, color:'#38bdf8', cat:'equip_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _buyGear(id) { const gear = GEAR.find(g=>g.id===id); if (!gear || gear.owned || GS.capital < gear.price) { if(gear&&!gear.owned&&GS.capital<gear.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - gear.price); gear.owned = true; Persist.saveGear(); GS.toastQueue.push({ msg:`✨ ${gear.name} unlocked`, color:'#fbbf24', cat:'buy_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _equipGear(id) { const gear = GEAR.find(g=>g.id===id && g.owned); if (!gear) return; GS.equippedGear = gear; Persist.saveGear(); GS.toastQueue.push({ msg:`🎧 ${gear.name} equipped`, color:'#38bdf8', cat:'equip_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _buyAvatar(id) { const av = AVATARS.find(a=>a.id===id); if (!av || av.owned || GS.capital < av.price) { if(av&&!av.owned&&GS.capital<av.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - av.price); av.owned = true; Persist.saveAvatars(); GS.toastQueue.push({ msg:`✨ ${av.name} unlocked`, color:'#fbbf24', cat:'buy_avatar_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _equipAvatar(id) { const av = AVATARS.find(a=>a.id===id && a.owned); if (!av) return; GS.equippedAvatar = av; GS.player.y = Math.min(GS.player.y, C.GY - av.h); if (GS.player.y + av.h > C.GY) GS.player.y = C.GY - av.h; Persist.saveAvatars(); GS.toastQueue.push({ msg:`👤 ${av.name} equipped`, color:'#38bdf8', cat:'equip_avatar_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
   _buyDistrict(id) {
     const d = DISTRICTS.find(d => d.id === id);
     if (!d || d.owned) return;
@@ -2247,6 +2253,10 @@ const Renderer = {
     this._drawRankAura();
     this._drawPlayer();
     this._drawHeadphones();
+    this._drawBackpack();
+    this._drawSneakers();
+    this._drawShades();
+    this._drawChain();
     if (GS.boss.active) this._drawBoss();
     if (GS.boss.active && GS.boss.intro) this._drawBossIntro();
     if (GS.boss.defeated && GS.phase === 'RUNNING') this._drawVictory();
@@ -2567,6 +2577,47 @@ const Renderer = {
     drawProceduralHands(ctx, px, py, av.w, av.h, GS.player.grounded, GS.audio.amplitude, this.frame, GS.speed);
   },
   _drawHeadphones() { if (!GS.equippedGear || GS.equippedGear.id !== 'headphones') return; const hx = GS.player.x+6, hy = GS.player.y-7, hw=16, hh=9; ctx.beginPath(); ctx.moveTo(hx+hw/2-4, hy-2); ctx.quadraticCurveTo(hx+hw/2, hy-6, hx+hw/2+4, hy-2); ctx.lineWidth=2; ctx.strokeStyle='#222'; ctx.stroke(); ctx.fillStyle='#333'; ctx.beginPath(); ctx.ellipse(hx+2, hy+hh/2,3,4,0,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(hx+hw-2, hy+hh/2,3,4,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#222'; ctx.fillRect(hx+hw/2-2, hy-3,4,3); },
+  _drawBackpack() {
+    if (!GS.equippedGear || GS.equippedGear.id !== 'backpack') return;
+    const px = GS.player.x, py = GS.player.y;
+    const bx = px - 9, by = py + 3;
+    ctx.fillStyle = '#166534'; ctx.fillRect(bx, by, 8, 13);
+    ctx.fillStyle = '#14532d'; ctx.fillRect(bx + 1, by - 3, 6, 4);
+    ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(bx + 8, by + 2); ctx.lineTo(px + 1, by + 5); ctx.stroke();
+    ctx.fillStyle = '#22c55e'; ctx.fillRect(bx + 2, by + 5, 4, 3);
+  },
+  _drawSneakers() {
+    if (!GS.equippedGear || GS.equippedGear.id !== 'sneakers') return;
+    const px = GS.player.x, py = GS.player.y, av = GS.equippedAvatar;
+    const gy = py + av.h;
+    const loff = (GS.phase === 'RUNNING' && GS.player.grounded) ? Math.sin(performance.now() / 120) * 5 : 0;
+    ctx.fillStyle = '#7c3aed';
+    ctx.fillRect(px + 1, gy + 6 + loff, 9, 4);
+    ctx.fillStyle = '#c4b5fd'; ctx.fillRect(px + 2, gy + 6 + loff, 9, 1);
+    ctx.fillStyle = '#7c3aed';
+    ctx.fillRect(px + av.w - 10, gy + 6 - loff, 9, 4);
+    ctx.fillStyle = '#c4b5fd'; ctx.fillRect(px + av.w - 9, gy + 6 - loff, 9, 1);
+  },
+  _drawShades() {
+    if (!GS.equippedGear || GS.equippedGear.id !== 'shades') return;
+    const px = GS.player.x, py = GS.player.y;
+    const hx = px + 5, hy = py - 7;
+    ctx.fillStyle = '#1a1000'; ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(hx + 4, hy + 5, 4, 3, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(hx + 13, hy + 5, 4, 3, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(hx + 8, hy + 5); ctx.lineTo(hx + 9, hy + 5); ctx.stroke();
+  },
+  _drawChain() {
+    if (!GS.equippedGear || GS.equippedGear.id !== 'chain') return;
+    const px = GS.player.x, py = GS.player.y, av = GS.equippedAvatar;
+    const cx = px + av.w / 2;
+    ctx.strokeStyle = '#f97316'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(cx, py + 5, 6, 0.25, Math.PI - 0.25); ctx.stroke();
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath(); ctx.arc(cx, py + 11, 2.5, 0, Math.PI * 2); ctx.fill();
+  },
   _drawAudioSparkles() { const bass=GS.audio.bass; if(bass<=0) return; const count=Math.floor(bass*3)+1; for(let i=0;i<count;i++){ ctx.fillStyle=`rgba(255,100,50,${bass*0.5})`; ctx.beginPath(); ctx.arc(GS.player.x+Math.random()*GS.equippedAvatar.w, GS.player.y+Math.random()*GS.equippedAvatar.h, 2+bass*3,0,Math.PI*2); ctx.fill(); } },
   _drawVictory() {
     // Brief purple flash — fades over ~2s using boss.timer as proxy
@@ -2614,7 +2665,7 @@ const _toastTimes = new Map();
 function _deliverToast(msg,color,cat){ const now=Date.now(); if(now-(_toastTimes.get(cat)||0)<TOAST_COOLDOWN) return; _toastTimes.set(cat,now); const el=document.createElement('div'); el.className='toast'; el.style.background=color; el.style.color='#111'; el.textContent=msg; DOM.toastBox.appendChild(el); el.addEventListener('animationend',()=>el.remove(),{once:true}); setTimeout(()=>{ if(el.parentNode) el.remove(); },3200); }
 let _sfxCtx=null;
 function _deliverSFX(type){ try{ if(!_sfxCtx) _sfxCtx=new (window.AudioContext||window.webkitAudioContext)(); const actx=_sfxCtx; const now=actx.currentTime; const gain=actx.createGain(); gain.gain.value=0.18; gain.connect(actx.destination); const osc=actx.createOscillator(); if(type==='jump'){ osc.type='sine'; osc.frequency.setValueAtTime(440,now); osc.frequency.exponentialRampToValueAtTime(220,now+0.15); osc.connect(gain); osc.start(); osc.stop(now+0.15); }else if(type==='collision'){ osc.type='triangle'; osc.frequency.setValueAtTime(120,now); osc.frequency.exponentialRampToValueAtTime(60,now+0.2); osc.connect(gain); osc.start(); osc.stop(now+0.2); }else if(type==='reward'){ osc.type='sine'; osc.frequency.setValueAtTime(880,now); osc.frequency.exponentialRampToValueAtTime(440,now+0.1); osc.connect(gain); osc.start(); osc.stop(now+0.1); } gain.gain.exponentialRampToValueAtTime(0.0001,now+0.25); }catch{} }
-function _deliverDomEvent(ev){ if(ev.type==='cashPop'){ const d=document.createElement('div'); d.className='cash-pop'; d.textContent=`+$${typeof ev.payload.amount==='number'?ev.payload.amount.toFixed(1):ev.payload.amount}`; d.style.left=ev.payload.leftPct||`${20+Math.random()*60}%`; d.style.bottom='38%'; DOM.cframe.appendChild(d); setTimeout(()=>d.remove(),950); }else if(ev.type==='comboPop'){ const d=document.createElement('div'); d.className='combo-pop'; d.textContent=ev.payload.text; d.style.color=ev.payload.color||'var(--gold)'; d.style.left='50%'; d.style.top='35%'; d.style.transform='translateX(-50%)'; DOM.cframe.appendChild(d); setTimeout(()=>d.remove(),720); }else if(ev.type==='hsFlash'){ DOM.hsFlash.classList.remove('show'); void DOM.hsFlash.offsetWidth; DOM.hsFlash.classList.add('show'); setTimeout(()=>DOM.hsFlash.classList.remove('show'),2300); }else if(ev.type==='shake'){ DOM.gameEl.classList.remove('shake'); void DOM.gameEl.offsetWidth; DOM.gameEl.classList.add('shake'); setTimeout(()=>DOM.gameEl.classList.remove('shake'),460); }else if(ev.type==='missionsChanged'){ UISync.renderMissions(); }else if(ev.type==='districtChanged'){ UISync.renderDistricts(); }else if(ev.type==='skillChanged'){ UISync.renderSkillTree(); }else if(ev.type==='packChanged'){ UISync.renderStore(); }else if(ev.type==='playMusic'){ PreviewAudio.stop(); IdleHum.stop(); GameMusic.play(ev.url); }else if(ev.type==='stopMusic'){ GameMusic.stop(); }else if(ev.type==='purchaseRequest'){
+function _deliverDomEvent(ev){ if(ev.type==='cashPop'){ const d=document.createElement('div'); d.className='cash-pop'; d.textContent=`+$${typeof ev.payload.amount==='number'?ev.payload.amount.toFixed(1):ev.payload.amount}`; d.style.left=ev.payload.leftPct||`${20+Math.random()*60}%`; d.style.bottom='38%'; DOM.cframe.appendChild(d); setTimeout(()=>d.remove(),950); }else if(ev.type==='comboPop'){ const d=document.createElement('div'); d.className='combo-pop'; d.textContent=ev.payload.text; d.style.color=ev.payload.color||'var(--gold)'; d.style.left='50%'; d.style.top='35%'; d.style.transform='translateX(-50%)'; DOM.cframe.appendChild(d); setTimeout(()=>d.remove(),720); }else if(ev.type==='hsFlash'){ DOM.hsFlash.classList.remove('show'); void DOM.hsFlash.offsetWidth; DOM.hsFlash.classList.add('show'); setTimeout(()=>DOM.hsFlash.classList.remove('show'),2300); }else if(ev.type==='shake'){ DOM.gameEl.classList.remove('shake'); void DOM.gameEl.offsetWidth; DOM.gameEl.classList.add('shake'); setTimeout(()=>DOM.gameEl.classList.remove('shake'),460); }else if(ev.type==='missionsChanged'){ UISync.renderMissions(); }else if(ev.type==='districtChanged'){ UISync.renderDistricts(); }else if(ev.type==='skillChanged'){ UISync.renderSkillTree(); }else if(ev.type==='packChanged'){ UISync.renderStore(); }else if(ev.type==='playMusic'){ PreviewAudio.stop(); IdleHum.stop(); GameMusic.play(ev.url); }else if(ev.type==='stopMusic'){ GameMusic.stop(); }else if(ev.type==='shopChanged'){ UISync.renderShop(); }else if(ev.type==='purchaseRequest'){
   // Stripe Payment Links — replace test URLs with live links before shipping
   const STRIPE_LINKS = {
     midnight_tokyo:  'https://buy.stripe.com/test_midnight_tokyo',
@@ -2890,7 +2941,16 @@ function wireEvents() {
   window.addEventListener('keydown', e => { if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); INPUT.jumpQueued = true; } });
   canvas.addEventListener('touchstart', e => { e.preventDefault(); INPUT.jumpQueued = true; }, { passive: false });
   canvas.addEventListener('mousedown', e => { e.preventDefault(); INPUT.jumpQueued = true; });
-  DOM.startBtn.onclick = () => { INPUT.startRunIntent = true; };
+  DOM.startBtn.onclick = () => {
+    INPUT.startRunIntent = true;
+    // Android Chrome autoplay fix: trigger music directly from user gesture
+    // (HTMLAudio.play() inside requestAnimationFrame is blocked by autoplay policy)
+    if (GS.phase === 'IDLE' && GS.equippedPack && AUDIO_PACKS[GS.equippedPack]?.track) {
+      PreviewAudio.stop();
+      IdleHum.stop();
+      GameMusic.play(AUDIO_PACKS[GS.equippedPack].track);
+    }
+  };
   DOM.collectBtn.onclick = () => { INPUT.collectIntent = true; };
   DOM.audioBtn.onclick = async () => {
     await SimAudio.toggle();
