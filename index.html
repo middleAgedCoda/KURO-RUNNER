@@ -1,0 +1,3663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>KURO: RUNNER — THE SIGNAL EDITION</title>
+
+<meta name="title" content="KURO: RUNNER — THE SIGNAL">
+<meta name="description" content="High-fidelity, zero-dependency audio-reactive runner. Cinematic boss encounters & glitch aesthetics.">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kuro-runner.onrender.com/">
+<meta property="og:title" content="KURO: RUNNER — THE SIGNAL">
+<meta property="og:description" content="Experience the Neon-Link Engine. 0-build high-performance web gaming.">
+<meta property="og:image" content="https://kuro-runner.onrender.com/assets/og-preview.png">
+
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="https://kuro-runner.onrender.com/">
+<meta property="twitter:title" content="KURO: RUNNER — THE SIGNAL">
+<meta property="twitter:description" content="Audio-to-Physics sync technology. Built for the high-end web.">
+<meta property="twitter:image" content="https://kuro-runner.onrender.com/assets/og-preview.png">
+
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+
+/* ═══════════════════════════════════════ TOKENS (unchanged) */
+:root{
+  --bg:#05070a;--panel:#0b1120;--panel2:#0f1828;
+  --border:rgba(255,255,255,0.07);
+  --blue:#38bdf8;--gold:#fbbf24;--green:#22c55e;
+  --red:#ef4444;--purple:#a78bfa;--orange:#fb923c;
+  --dim:#475569;--mid:#94a3b8;--text:#e2e8f0;
+  --mono:'Share Tech Mono',monospace;
+  --disp:'Bebas Neue',sans-serif;
+  --r:10px;
+  --ui-bright:100%;
+  --ui-glow:0px;
+  --glitch-offset:0px;
+}
+*,*::before,*::after{box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100%;overflow-y:auto;display:flex;align-items:flex-start;justify-content:center;}
+#game{width:100%;max-width:860px;padding:14px 18px 24px;display:flex;flex-direction:column;gap:8px;opacity:0;transition:opacity .5s .3s;transform:translateX(var(--glitch-offset))}
+*,*::before,*::after{box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100%;overflow-y:auto;display:flex;align-items:flex-start;justify-content:center;}
+
+/* ── Intro ── */
+#intro{position:fixed;inset:0;z-index:900;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+#intro::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15) 2px,rgba(0,0,0,.15) 4px);pointer-events:none;z-index:2}
+.city-bg{position:absolute;bottom:0;left:0;right:0;height:220px;display:flex;align-items:flex-end;opacity:0;animation:city-rise 1.2s .3s ease-out forwards}
+@keyframes city-rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.bld{background:#0a1520;border-top:1px solid #152540;position:relative;flex-shrink:0}
+.bld::before{content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);width:3px;height:3px;background:var(--red);border-radius:50%;box-shadow:0 0 6px var(--red);animation:blink 2s infinite}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+.ground-glow{position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--blue);box-shadow:0 0 40px 8px rgba(56,189,248,.35);opacity:0;animation:gin .5s 1.4s forwards}
+@keyframes gin{to{opacity:1}}
+.intro-wrap{position:relative;z-index:3;text-align:center}
+.intro-eye{font-size:.6rem;letter-spacing:.35em;color:var(--blue);opacity:0;animation:fup .6s .8s ease forwards}
+.intro-h1{font-family:var(--disp);font-size:clamp(60px,13vw,130px);color:#fff;line-height:.9;opacity:0;clip-path:inset(0 100% 0 0);animation:rev .9s 1s cubic-bezier(.77,0,.18,1) forwards;text-shadow:0 0 60px rgba(56,189,248,.2)}
+.intro-h1 span{color:var(--blue)}
+.intro-sub{font-size:.65rem;letter-spacing:.22em;color:var(--dim);opacity:0;animation:fup .6s 1.7s ease forwards;margin-top:8px}
+@keyframes rev{0%{opacity:1;clip-path:inset(0 100% 0 0)}100%{opacity:1;clip-path:inset(0 0% 0 0)}}
+@keyframes fup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.intro-loader{position:relative;z-index:3;margin-top:44px;width:220px;opacity:0;animation:fup .4s 1.9s forwards}
+.ltrack{width:100%;height:2px;background:rgba(255,255,255,.07);border-radius:1px;overflow:hidden}
+.lfill{height:100%;width:0;background:var(--blue);box-shadow:0 0 10px var(--blue);animation:lprog 1.4s 2.1s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes lprog{to{width:100%}}
+.llabel{display:flex;justify-content:space-between;margin-top:5px;font-size:.52rem;letter-spacing:.12em;color:var(--dim)}
+.intro-cta{position:relative;z-index:3;margin-top:28px;font-size:.72rem;letter-spacing:.25em;color:var(--gold);opacity:0;cursor:pointer;border:1px solid rgba(251,191,36,.3);padding:10px 28px;border-radius:4px;animation:fup .5s 3.6s forwards,pgold 1.5s 3.6s infinite;display:none}
+@keyframes pgold{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.35)}50%{box-shadow:0 0 0 8px rgba(251,191,36,0)}}
+#intro.exit{animation:iex .65s cubic-bezier(.77,0,.18,1) forwards}
+@keyframes iex{0%{opacity:1;transform:scale(1)}60%{opacity:1;transform:scale(1.03)}100%{opacity:0;transform:scale(.97);pointer-events:none}}
+
+/* ── Toast ── */
+#toasts{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{font-family:var(--disp);font-size:1.1rem;letter-spacing:.04em;padding:10px 18px;border-radius:8px;color:#111;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:t-in-out 3s forwards;pointer-events:none}
+@keyframes t-in-out{0%{transform:translateX(110%);opacity:0}10%{transform:translateX(0);opacity:1}80%{transform:translateX(0);opacity:1}100%{transform:translateX(110%);opacity:0}}
+
+/* ── Game layout ── */
+#game.vis{opacity:1}
+@keyframes districtWarp{0%{filter:hue-rotate(0deg) brightness(1) blur(0px);transform:scale(1)}50%{filter:hue-rotate(180deg) brightness(3) blur(10px);transform:scale(1.1)}100%{filter:hue-rotate(360deg) brightness(1) blur(0px);transform:scale(1)}}
+.warp-active{animation:districtWarp .8s cubic-bezier(.23,1,.32,1) forwards}
+
+/* ── Audio Pack Store ── */
+.store-overlay{position:fixed;inset:0;z-index:800;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;opacity:0;transition:opacity .25s}
+.store-overlay.open{opacity:1;pointer-events:all}
+.store-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px)}
+.store-panel{position:relative;z-index:1;width:100%;max-width:860px;background:var(--panel);border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 20px 36px;transform:translateY(100%);transition:transform .3s cubic-bezier(.23,1,.32,1);max-height:75vh;overflow-y:auto}
+.store-overlay.open .store-panel{transform:translateY(0)}
+.store-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.store-title{font-family:var(--disp);font-size:1.3rem;letter-spacing:.06em;color:var(--blue)}
+.store-close{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--mid);font-family:var(--mono);font-size:.8rem;padding:6px 14px;border-radius:6px;cursor:pointer}
+.pack-list{display:flex;flex-direction:column;gap:12px}
+.pack-card{background:var(--panel2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:14px;transition:border-color .2s}
+.pack-card.equipped{border-color:var(--gold);box-shadow:0 0 14px rgba(251,191,36,.15)}
+.pack-card.previewing{border-color:var(--blue);animation:previewPulse 1s infinite}
+@keyframes previewPulse{0%,100%{box-shadow:0 0 0px var(--blue)}50%{box-shadow:0 0 14px var(--blue)}}
+
+/* ── Purchase Confirm Modal ── */
+.confirm-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:900;padding:20px}
+.confirm-modal.open{display:flex}
+.confirm-box{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:100%;max-width:340px;text-align:center}
+.confirm-name{font-family:var(--disp);font-size:1.2rem;letter-spacing:.05em;margin-bottom:6px}
+.confirm-cost{font-size:.85rem;color:var(--gold);font-weight:700;margin-bottom:18px}
+.confirm-desc{font-size:.55rem;color:var(--dim);letter-spacing:.06em;margin-bottom:22px;line-height:1.6}
+.confirm-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.confirm-btns button{min-height:48px;border:none;border-radius:10px;font-family:var(--mono);font-size:.75rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:.12s}
+.confirm-btns button:active{transform:scale(.96)}
+#confirmBuy{background:var(--gold);color:#1a0e00}
+#confirmCancel{background:rgba(255,255,255,.06);color:var(--mid);border:1px solid var(--border)}
+/* ── Share Card Modal ── */
+#shareModal{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:980;padding:16px;flex-direction:column;gap:14px}
+#shareModal.open{display:flex}
+#sharePreview{border-radius:10px;max-width:100%;width:min(400px,90vw);box-shadow:0 0 40px rgba(56,189,248,.25);display:block}
+.share-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.share-btn{min-height:46px;padding:0 20px;border:none;border-radius:10px;font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:.12s;flex:1;min-width:100px}
+.share-btn:active{transform:scale(.96)}
+#shareNative{background:var(--blue);color:#001a2e}
+#shareCopy{background:var(--purple);color:#fff}
+#shareClose{background:rgba(255,255,255,.07);color:var(--mid);border:1px solid var(--border)}
+#nameModal{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;z-index:950;padding:20px}
+#nameModal.open{display:flex}
+.name-box{background:var(--panel);border:1px solid var(--blue);border-radius:16px;padding:28px 24px;width:100%;max-width:320px;text-align:center}
+.name-title{font-family:var(--disp);font-size:1.3rem;letter-spacing:.06em;color:var(--blue);margin-bottom:6px}
+.name-sub{font-size:.55rem;color:var(--dim);letter-spacing:.08em;margin-bottom:18px;line-height:1.6}
+#nameInput{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:.9rem;padding:12px 14px;text-align:center;letter-spacing:.12em;text-transform:uppercase;outline:none;margin-bottom:6px}
+#nameInput:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(56,189,248,.2)}
+.name-hint{font-size:.48rem;color:var(--dim);margin-bottom:18px;letter-spacing:.06em}
+#nameSubmit{width:100%;min-height:48px;background:var(--blue);color:#001a2e;border:none;border-radius:10px;font-family:var(--mono);font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:.12s}
+#nameSubmit:active{transform:scale(.97)}
+/* ── LB loading + live styles ── */
+.lb-loading{text-align:center;padding:24px;color:var(--dim);font-size:.65rem;letter-spacing:.1em;animation:pulse 1.4s infinite}
+.lb-you{background:rgba(56,189,248,.08);border-left:2px solid var(--blue)}
+.pack-swatch{width:40px;height:40px;border-radius:8px;flex-shrink:0}
+.pack-info{flex:1}
+.pack-name{font-family:var(--disp);font-size:.95rem;letter-spacing:.05em}
+.pack-tracks{font-size:.48rem;color:var(--dim);letter-spacing:.08em;margin-top:2px}
+.pack-mods{font-size:.5rem;color:var(--mid);margin-top:4px;line-height:1.6}
+.pack-action{flex-shrink:0;font-family:var(--mono);font-size:.6rem;font-weight:700;padding:8px 14px;border-radius:6px;border:none;cursor:pointer;letter-spacing:.07em;text-transform:uppercase;transition:.15s}
+.pack-action.buy{background:var(--gold);color:#1a0e00}
+.pack-action.equip{background:var(--blue);color:#001a2e}
+.pack-action.active{background:rgba(34,197,94,.15);color:var(--green);border:1px solid var(--green);cursor:default}
+#storeBtn{background:linear-gradient(135deg,var(--purple),#6d28d9);color:#fff;margin:0 auto;display:block;width:fit-content;font-size:.75rem;padding:8px 18px;border:none;border-radius:var(--r);font-family:var(--mono);font-weight:700;letter-spacing:.08em;cursor:pointer;text-transform:uppercase;transition:.15s}
+#storeBtn:active{transform:scale(.97)}
+#skill-menu{position:fixed;inset:0;z-index:800;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;opacity:0;transition:opacity .25s}
+#skill-menu.open{opacity:1;pointer-events:all}
+.skill-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px)}
+.skill-panel{position:relative;z-index:1;width:100%;max-width:860px;background:var(--panel);border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 20px 36px;transform:translateY(100%);transition:transform .3s cubic-bezier(.23,1,.32,1)}
+#skill-menu.open .skill-panel{transform:translateY(0)}
+.skill-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.skill-title{font-family:var(--disp);font-size:1.4rem;letter-spacing:.06em;color:var(--blue)}
+.skill-close{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--mid);font-family:var(--mono);font-size:.8rem;padding:6px 14px;border-radius:6px;cursor:pointer;letter-spacing:.05em}
+.skill-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:480px){.skill-grid{grid-template-columns:repeat(3,1fr)}}
+.skill-node{background:var(--panel2);border:1px solid var(--border);border-radius:var(--r);padding:14px 10px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:border-color .2s,box-shadow .2s;position:relative;min-height:100px}
+.skill-node:active{transform:scale(.97)}
+.skill-node.maxed{border-color:var(--gold);box-shadow:0 0 14px rgba(251,191,36,.2)}
+.skill-node.locked{opacity:.35;cursor:not-allowed}
+.skill-icon{font-size:1.5rem}
+.skill-name{font-size:.58rem;color:var(--mid);letter-spacing:.08em;text-transform:uppercase;text-align:center}
+.skill-desc{font-size:.48rem;color:var(--dim);text-align:center;line-height:1.5}
+.skill-cost{font-size:.65rem;font-weight:700;color:var(--gold);margin-top:2px}
+.skill-pips{display:flex;gap:3px;margin-top:2px}
+.skill-pip{width:10px;height:3px;border-radius:1px;background:rgba(255,255,255,.08)}
+.skill-pip.on{background:var(--blue);box-shadow:0 0 4px var(--blue)}
+.skill-pip.gold{background:var(--gold);box-shadow:0 0 4px var(--gold)}
+.skill-btn-row{display:flex;justify-content:center;margin-top:14px}
+#openSkillBtn{background:var(--purple);color:#fff;font-family:var(--mono);font-size:.75rem;font-weight:700;letter-spacing:.08em;padding:10px 24px;border:none;border-radius:var(--r);cursor:pointer;text-transform:uppercase;transition:.15s}
+#openSkillBtn:active{transform:scale(.97)}
+@keyframes shake{0%{transform:translate(0,0)}15%{transform:translate(-5px,-2px) rotate(-.8deg)}30%{transform:translate(5px,3px) rotate(.8deg)}45%{transform:translate(-3px,1px) rotate(-.4deg)}60%{transform:translate(3px,-2px) rotate(.4deg)}80%{transform:translate(-2px,2px)}100%{transform:translate(0,0)}}
+#game.shake{animation:shake .45s ease-out}
+.top-bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:10px 20px}
+.hstat{display:flex;flex-direction:column}
+.hstat.r{text-align:right;align-items:flex-end}
+.slbl{font-size:.52rem;color:var(--dim);letter-spacing:.09em;text-transform:uppercase}
+.sval{font-size:1.1rem;font-weight:700;color:var(--blue);line-height:1.2}
+.badge{font-size:.6rem;font-weight:800;letter-spacing:.08em;padding:4px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);transition:color .2s}
+.meta-bar{display:flex;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:8px 16px;gap:8px}
+.streak-chip{display:flex;align-items:center;gap:6px;font-size:.62rem;color:var(--gold)}
+.streak-fire{font-size:1rem;animation:firepulse 1s infinite alternate}
+@keyframes firepulse{from{transform:scale(1)}to{transform:scale(1.2)}}
+.xp-wrap{flex:1;display:flex;flex-direction:column;gap:3px}
+.xp-label{font-size:.5rem;color:var(--dim);letter-spacing:.08em;display:flex;justify-content:space-between}
+.xp-track{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--blue));border-radius:2px;transition:width .5s ease;box-shadow:0 0 8px rgba(167,139,250,.5)}
+.rank-badge{font-family:var(--disp);font-size:.9rem;color:var(--purple);letter-spacing:.05em;white-space:nowrap}
+.speed-rail{height:3px;background:rgba(255,255,255,.04);border-radius:2px;overflow:hidden}
+#speedFill{height:100%;width:0%;border-radius:2px;background:var(--blue);box-shadow:0 0 10px var(--blue);transition:width .3s ease,background .4s,box-shadow .4s}
+.cframe{position:relative;background:#000;border-radius:var(--r);overflow:hidden;box-shadow:0 20px 50px -10px rgba(0,0,0,.8)}
+canvas{display:block;width:100%;height:auto}
+.cash-pop{position:absolute;font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--green);pointer-events:none;text-shadow:0 0 10px var(--green);animation:cpop .9s ease forwards;z-index:10;white-space:nowrap}
+@keyframes cpop{0%{opacity:1;transform:translateY(0) scale(1)}20%{transform:translateY(-10px) scale(1.2)}100%{opacity:0;transform:translateY(-48px) scale(.85)}}
+.combo-pop{position:absolute;font-family:var(--disp);font-size:clamp(18px,4vw,32px);pointer-events:none;animation:combopop .7s ease forwards;z-index:11}
+@keyframes combopop{0%{opacity:1;transform:scale(.6)}30%{transform:scale(1.15)}70%{opacity:1}100%{opacity:0;transform:scale(.9) translateY(-20px)}}
+.hs-flash{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:5;opacity:0}
+.hs-flash.show{animation:hsburst 2.2s ease forwards}
+@keyframes hsburst{0%{opacity:0}10%{opacity:1}75%{opacity:1}100%{opacity:0}}
+.hs-text{font-family:var(--disp);font-size:clamp(26px,5.5vw,48px);color:var(--gold);text-shadow:0 0 30px rgba(251,191,36,.8),0 0 60px rgba(251,191,36,.3);letter-spacing:.1em;animation:hsscale .4s ease forwards}
+@keyframes hsscale{0%{transform:scale(.5)}70%{transform:scale(1.08)}100%{transform:scale(1)}}
+.hs-sub{font-family:var(--mono);font-size:.6rem;color:var(--gold);opacity:.65;letter-spacing:.22em;margin-top:5px}
+.ctrl{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:none;padding:13px 10px;border-radius:var(--r);font-family:var(--mono);font-weight:700;font-size:.8rem;letter-spacing:.06em;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:transform .12s,filter .12s,box-shadow .2s;text-transform:uppercase}
+.btn:active:not(:disabled){transform:scale(.96)}
+.btn:disabled{opacity:.28;filter:grayscale(1);cursor:not-allowed}
+.btn-go{background:var(--green);color:#052e16}
+.btn-get{background:var(--gold);color:#3a1a00}
+.bsub{font-size:.54rem;opacity:.72;font-weight:400;letter-spacing:.04em;text-transform:none}
+@keyframes pgoldpulse{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.5)}50%{box-shadow:0 0 0 10px rgba(251,191,36,0)}}
+.pulse{animation:pgoldpulse 1.6s infinite}
+.upg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ucard{background:var(--panel);border:1px solid var(--border);padding:10px 6px 8px;border-radius:var(--r);font-family:var(--mono);color:var(--text);cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;transition:border-color .2s,opacity .2s,transform .1s,box-shadow .2s;position:relative;overflow:hidden}
+.ucard::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.03),transparent);pointer-events:none}
+.ucard:hover:not(.locked){border-color:var(--blue);box-shadow:0 0 16px rgba(56,189,248,.15)}
+.ucard:active:not(.locked){transform:scale(.97)}
+.ucard.locked{opacity:.35;cursor:not-allowed}
+.ucard.maxed{border-color:var(--gold)!important;box-shadow:0 0 16px rgba(251,191,36,.2)!important}
+.ulbl{font-size:.52rem;color:var(--dim);text-transform:uppercase;letter-spacing:.07em}
+.ucost{font-size:.8rem;font-weight:700;color:var(--gold)}
+.ucard.maxed .ucost{font-size:.65rem;letter-spacing:.08em}
+.pips{display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;justify-content:center}
+.pip{width:7px;height:3px;border-radius:1px;background:rgba(255,255,255,.08);transition:background .2s,box-shadow .2s}
+.pip.on{background:var(--blue);box-shadow:0 0 4px var(--blue)}
+.pip.gold{background:var(--gold);box-shadow:0 0 4px var(--gold)}
+.panel-tabs{display:flex;gap:6px;margin-top:2px}
+.tab{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:8px 8px 0 0;padding:7px;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-align:center;color:var(--dim);transition:.15s}
+.tab.active{background:var(--panel2);border-bottom-color:var(--panel2);color:var(--text)}
+.tab-content{background:var(--panel2);border:1px solid var(--border);border-radius:0 0 var(--r) var(--r);padding:10px;display:none}
+.tab-content.active{display:block}
+.skin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.skin-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:.15s;position:relative}
+.skin-card:hover{border-color:var(--blue)}
+.skin-card.owned{border-color:var(--green)}
+.skin-card.equipped{border-color:var(--gold);box-shadow:0 0 12px rgba(251,191,36,.25)}
+.skin-preview{width:28px;height:40px;border-radius:3px;position:relative}
+.skin-name{font-size:.5rem;color:var(--mid);text-align:center;letter-spacing:.05em;text-transform:uppercase}
+.skin-price{font-size:.58rem;color:var(--gold);font-weight:700}
+.skin-owned-badge{position:absolute;top:3px;right:3px;font-size:.42rem;color:var(--green)}
+.mission-list{display:flex;flex-direction:column;gap:6px}
+.mission{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px}
+.m-icon{font-size:1.1rem;flex-shrink:0}
+.m-info{flex:1}
+.m-name{font-size:.62rem;color:var(--text);margin-bottom:2px}
+.m-prog-track{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.m-prog-fill{height:100%;background:var(--blue);border-radius:2px;transition:width .4s}
+.m-prog-label{font-size:.48rem;color:var(--dim);margin-top:2px}
+.m-reward{font-size:.65rem;color:var(--gold);font-weight:700;flex-shrink:0;white-space:nowrap}
+.m-claim{background:var(--green);color:#052e16;border:none;font-family:var(--mono);font-size:.55rem;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;transition:.1s;animation:pulse-g 2s infinite}
+@keyframes pulse-g{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}}
+.m-claim:active{transform:scale(.95)}
+.lb-list{display:flex;flex-direction:column;gap:5px}
+.lb-row{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:7px 10px}
+.lb-rank{font-family:var(--disp);font-size:1rem;color:var(--dim);width:24px;text-align:center;flex-shrink:0}
+.lb-rank.gold{color:var(--gold)}.lb-rank.silver{color:#94a3b8}.lb-rank.bronze{color:var(--orange)}
+.lb-name{flex:1;font-size:.62rem;color:var(--text)}
+.lb-score{font-size:.65rem;color:var(--blue);font-weight:700}
+.lb-you{border-color:var(--blue)!important;background:rgba(56,189,248,.06)!important}
+.hint{font-size:.58rem;color:var(--dim);text-align:center;letter-spacing:.06em}
+.district-list{display:flex;flex-direction:column;gap:10px}
+.district-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;transition:border-color .2s}
+.district-card.active-district{border-color:var(--blue);box-shadow:0 0 18px rgba(56,189,248,.18)}
+.district-card.locked-district{opacity:.45;filter:grayscale(.6)}
+.district-card::before{content:'';position:absolute;inset:0;opacity:.07;pointer-events:none}
+.district-icon{font-size:2rem;flex-shrink:0;width:44px;text-align:center}
+.district-info{flex:1}
+.district-name{font-family:var(--disp);font-size:1rem;letter-spacing:.05em;line-height:1}
+.district-sub{font-size:.5rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.district-perks{font-size:.52rem;color:var(--mid);margin-top:5px;line-height:1.6}
+.district-perk{display:inline-block;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:2px 7px;margin:1px 2px 1px 0}
+.district-action{flex-shrink:0;font-family:var(--mono);font-size:.6rem;font-weight:700;padding:7px 14px;border-radius:6px;border:none;cursor:pointer;letter-spacing:.07em;text-transform:uppercase;transition:.15s}
+.district-action.buy{background:var(--gold);color:#1a0e00}
+.district-action.enter{background:var(--blue);color:#001a2e}
+.district-action.current{background:rgba(34,197,94,.15);color:var(--green);border:1px solid var(--green);cursor:default}
+.district-req{font-size:.48rem;color:var(--dim);margin-top:3px}
+/* ── Kuro SVG Icon System ── */
+.kuro-icon{width:20px;height:20px;display:inline-block;vertical-align:middle;fill:currentColor;flex-shrink:0;transition:transform .15s,filter .15s}
+.kuro-icon.blue{color:var(--blue);filter:drop-shadow(0 0 4px var(--blue))}
+.kuro-icon.gold{color:var(--gold);filter:drop-shadow(0 0 4px var(--gold))}
+.kuro-icon.green{color:var(--green);filter:drop-shadow(0 0 4px var(--green))}
+.kuro-icon.purple{color:var(--purple);filter:drop-shadow(0 0 4px var(--purple))}
+.kuro-icon.red{color:var(--red)}
+.kuro-icon.streak-active{animation:kuroPulse 1.2s infinite alternate}
+.kuro-icon.active{filter:drop-shadow(0 0 10px currentColor) brightness(1.4)}
+@keyframes kuroPulse{0%{transform:scale(.95);opacity:.8}100%{transform:scale(1.05);opacity:1}}
+.audio-btn{background:#3b82f6;color:#fff;margin:0 auto;display:block;width:fit-content;font-size:.75rem;padding:8px 18px}
+
+/* ── Boss UI ── */
+.boss-ui{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:55%;z-index:10;pointer-events:none;opacity:0;transition:opacity .3s}
+.boss-ui.active{opacity:1}
+.boss-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.boss-name{font-family:var(--disp);font-size:.85rem;letter-spacing:.12em;color:#a855f7;text-shadow:0 0 12px rgba(168,85,247,.6)}
+.boss-phase{font-size:.48rem;color:rgba(168,85,247,.6);letter-spacing:.15em}
+.boss-bar{width:100%;height:7px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;border:1px solid rgba(168,85,247,.2)}
+#boss-hp{height:100%;width:100%;background:linear-gradient(90deg,#a855f7,#ec4899);border-radius:4px;transition:width .15s linear;box-shadow:0 0 8px rgba(168,85,247,.5)}
+@media(max-width:600px){
+  .top-bar{grid-template-columns:1fr 1fr;padding:9px 12px}
+  .badge{grid-column:span 2;order:-1;text-align:center}
+  .upg-grid{grid-template-columns:1fr}
+  .skin-grid{grid-template-columns:repeat(3,1fr)}
+  .btn{padding:11px 8px;font-size:.73rem}
+}
+/* ── Landscape mobile: canvas + action buttons locked in view, no pixel stretch ── */
+@media(max-height:500px) and (orientation:landscape){
+  #game{padding:4px 8px 8px;gap:2px}
+  /* Preserve 800×380 aspect ratio exactly — no stretch */
+  canvas{aspect-ratio:800/380;width:100%;max-height:40vh;height:auto;display:block;margin:0 auto}
+  .ctrl{display:flex;flex-direction:row;gap:6px}
+  .ctrl .btn{flex:1;padding:7px 6px;font-size:.68rem}
+  /* Hide idle content — only essentials visible */
+  .upg-grid{display:none}
+  .streak-chip{display:none}
+  .panel-tabs,.tab-content{display:none}
+  .skill-btn-row{display:none}
+  .meta-bar .xp-wrap{display:none} /* hide XP bar — keep rank badge only */
+  .audio-btn{padding:5px 10px;font-size:.6rem}
+  .top-bar{padding:5px 10px;font-size:.68rem}
+  .speed-rail{height:2px}
+}
+@media(max-width:400px){
+  .top-bar{font-size:.65rem}
+  .action-row .btn{padding:10px 6px;font-size:.68rem}
+  .store-panel,.skill-panel{max-height:85vh}
+}
+</style>
+</head>
+<body>
+<!-- ═══ KURO SVG ICON SPRITES — game-aesthetic, neon-edge design ═══ -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <!-- FIRE — wild upward flame with inner core -->
+  <symbol id="ico-fire" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2c0 0-6 5-6 11a6 6 0 0012 0c0-2.5-1-4.5-2.5-6 0 2-1.5 3-1.5 3S12 7 12 2z"/>
+    <path d="M12 22v-4M10 18c0 0 1-1.5 2-1.5S14 18 14 18" stroke-width="1"/>
+  </symbol>
+  <!-- HEADPHONES — sleek over-ear cans with bold arch -->
+  <symbol id="ico-headphones" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <path d="M3 14v-2a9 9 0 0118 0v2"/>
+    <rect x="2" y="14" width="4" height="6" rx="2"/>
+    <rect x="18" y="14" width="4" height="6" rx="2"/>
+  </symbol>
+  <!-- BOLT — angular, razor-edged signal bolt -->
+  <symbol id="ico-bolt" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M14 2L4 13h7l-1 9 10-12h-7z"/>
+  </symbol>
+  <!-- STAR — sharp 5-point with aggressive inner angle -->
+  <symbol id="ico-star" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+  </symbol>
+  <!-- CHART — stepped bar graph, upward climb -->
+  <symbol id="ico-chart" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M2 20h20v-2H2v2zM4 18V12h3v6H4zm5 0V8h3v10H9zm5 0V4h3v14h-3z"/>
+  </symbol>
+  <!-- TROPHY — bold cup with handles and base -->
+  <symbol id="ico-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 21h8M12 17v4M6 3H4a1 1 0 00-1 1v2a5 5 0 004 4.9M18 3h2a1 1 0 011 1v2a5 5 0 01-4 4.9"/>
+    <path d="M6 3h12v8a6 6 0 01-12 0V3z" fill="currentColor" fill-opacity=".12"/>
+    <path d="M6 3h12v8a6 6 0 01-12 0V3z"/>
+  </symbol>
+  <!-- MISSIONS — target crosshair with check overlay -->
+  <symbol id="ico-missions" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/>
+    <circle cx="12" cy="12" r="4"/>
+    <path d="M9 12l2 2 4-4"/>
+  </symbol>
+  <!-- SHOP — stylized bag with geometric fold -->
+  <symbol id="ico-shop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6L18 2H6z"/>
+    <path d="M3 6h18"/>
+    <path d="M16 10a4 4 0 01-8 0"/>
+  </symbol>
+  <!-- DISTRICTS — city skyline silhouette -->
+  <symbol id="ico-districts" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M1 22h22v-2H1v2zM3 20V10l4-4v14H3zm5 0V7l3-3v16H8zm4 0V4l4 4v12h-4zm5 0v-8l2-2v10h-2z"/>
+  </symbol>
+  <!-- BRAIN/SKILL — angular neural node cluster -->
+  <symbol id="ico-brain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
+    <path d="M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>
+    <circle cx="12" cy="12" r="7" stroke-dasharray="3 2"/>
+  </symbol>
+  <!-- MUSIC NOTE — double beam quaver -->
+  <symbol id="ico-music" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M9 18a3 3 0 100-6 3 3 0 000 6zM17 16a3 3 0 100-6 3 3 0 000 6zM12 12V4l9-2v8"/>
+    <path d="M9 12V6l9-2v6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  </symbol>
+  <!-- MIC — condenser capsule shape with stand -->
+  <symbol id="ico-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="9" y="2" width="6" height="11" rx="3"/>
+    <path d="M5 10a7 7 0 0014 0"/>
+    <path d="M12 19v3M8 22h8"/>
+  </symbol>
+  <!-- COIN — bold coin face with glyph -->
+  <symbol id="ico-coin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <circle cx="12" cy="12" r="9"/>
+    <path d="M12 7v10M9.5 9.5c0-1.4 1.1-2.5 2.5-2.5s2.5 1.1 2.5 2.5-2.5 2.5-2.5 2.5-2.5 1.1-2.5 2.5 1.1 2.5 2.5 2.5 2.5-1.1 2.5-2.5"/>
+  </symbol>
+  <!-- LEVEL UP — angular arrow burst -->
+  <symbol id="ico-level" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2l3 8h7l-5.5 4 2 7L12 17l-6.5 4 2-7L2 10h7z" opacity=".6"/>
+    <path d="M12 4l2 6h6l-4.5 3.5 1.5 5.5-5-3.5-5 3.5 1.5-5.5L4 10h6z"/>
+  </symbol>
+</svg>
+
+<!-- ═══ INTRO ════════════════════════════════════════════════════ -->
+<div id="intro">
+  <div class="city-bg" id="cityBg"></div>
+  <div class="ground-glow"></div>
+  <div class="intro-wrap">
+    <div class="intro-eye">— KURO DIGITAL PRESENTS —</div>
+    <div class="intro-h1">KURO<br><span>RUNNER</span></div>
+    <div class="intro-sub">RUN · EARN · DOMINATE · ASCEND</div>
+  </div>
+  <div class="intro-loader">
+    <div class="ltrack"><div class="lfill"></div></div>
+    <div class="llabel"><span id="loadMsg">INITIALIZING SYSTEMS</span><span id="loadPct">0%</span></div>
+  </div>
+  <div class="intro-cta" id="introCta" style="display:none;opacity:0;">▶ &nbsp;PRESS TO ENTER</div>
+</div>
+
+<!-- ═══ TOAST HOST ════════════════════════════════════════════════ -->
+<div id="toasts"></div>
+
+<!-- ═══ GAME ═════════════════════════════════════════════════════ -->
+<div id="game">
+  <div class="top-bar">
+    <div class="hstat"><span class="slbl">Capital</span><span class="sval" id="capDisplay">$0</span></div>
+    <div class="badge" id="stateBadge">IDLE</div>
+    <div class="hstat r"><span class="slbl">Best Score</span><span class="sval" id="bestDisplay">0</span></div>
+  </div>
+  <div class="meta-bar">
+    <div class="streak-chip"><svg class="kuro-icon gold streak-active"><use href="#ico-fire"/></svg><span>1 DAY STREAK</span></div>
+    <div class="xp-wrap">
+      <div class="xp-label"><span>RANK XP</span><span id="xpLabel">0 / 80</span></div>
+      <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+    </div>
+    <div class="rank-badge" id="rankBadge">ROOKIE</div>
+  </div>
+  <div class="speed-rail"><div id="speedFill"></div></div>
+  <div class="cframe" id="cframe">
+    <canvas id="gc" width="800" height="380"></canvas>
+    <div class="hs-flash" id="hsFlash"><div class="hs-text">🏆 NEW BEST</div><div class="hs-sub">KURO RUNNER — LEVEL UP</div></div>
+    <div class="boss-ui" id="bossUi">
+      <div class="boss-label">
+        <div class="boss-name">⚡ THE SIGNAL</div>
+        <div class="boss-phase" id="bossPhaseLabel">PHASE 1</div>
+      </div>
+      <div class="boss-bar"><div id="boss-hp"></div></div>
+    </div>
+  </div>
+  <div class="ctrl">
+    <button id="startBtn" class="btn btn-go"><span id="startLbl">Start Run</span><span class="bsub">Run: <span id="runDisp">0</span></span></button>
+    <button id="collectBtn" class="btn btn-get" disabled><span>Collect</span><span class="bsub" id="collectPv">$0.0 ready</span></button>
+  </div>
+  <button id="audioBtn" class="btn audio-btn">🎧 ENABLE AUDIO</button>
+  <div class="upg-grid">
+    <button id="uInc" class="ucard locked"><span class="ulbl">Passive Income</span><span class="ucost" id="uIncCost">$50</span><div class="pips" id="pipInc"></div></button>
+    <button id="uJmp" class="ucard locked"><span class="ulbl">Jump Force</span><span class="ucost" id="uJmpCost">$75</span><div class="pips" id="pipJmp"></div></button>
+    <button id="uScr" class="ucard locked"><span class="ulbl">Score Multi</span><span class="ucost" id="uScrCost">$100</span><div class="pips" id="pipScr"></div></button>
+  </div>
+  <div class="panel-tabs">
+    <div class="tab active" data-tab="missions"><svg class="kuro-icon gold" style="width:14px;height:14px"><use href="#ico-missions"/></svg> Missions</div>
+    <div class="tab" data-tab="shop"><svg class="kuro-icon blue" style="width:14px;height:14px"><use href="#ico-shop"/></svg> Shop</div>
+    <div class="tab" data-tab="districts"><svg class="kuro-icon" style="width:14px;height:14px;color:#22d3ee;filter:drop-shadow(0 0 4px #22d3ee)"><use href="#ico-districts"/></svg> Districts</div>
+    <div class="tab" data-tab="lb"><svg class="kuro-icon gold" style="width:14px;height:14px"><use href="#ico-trophy"/></svg> Ranks</div>
+  </div>
+  <div class="tab-content active" id="tab-missions"><div class="mission-list" id="missionList"></div></div>
+  <div class="tab-content" id="tab-shop">
+    <div style="font-size:.55rem;color:var(--dim);letter-spacing:.1em;margin-bottom:8px">RUNNER SKINS</div>
+    <div class="skin-grid" id="skinGrid"></div>
+    <div style="font-size:.55rem;color:var(--dim);letter-spacing:.1em;margin:10px 0 8px">TRAIL EFFECTS</div>
+    <div class="skin-grid" id="trailGrid"></div>
+    <div style="font-size:.55rem;color:var(--dim);letter-spacing:.1em;margin:10px 0 8px">GEAR</div>
+    <div class="skin-grid" id="gearGrid"></div>
+    <div style="font-size:.55rem;color:var(--dim);letter-spacing:.1em;margin:10px 0 8px">CHARACTERS</div>
+    <div class="skin-grid" id="avatarGrid"></div>
+  </div>
+  <div class="tab-content" id="tab-districts"><div id="districtList"></div></div>
+  <div class="tab-content" id="tab-lb"><div class="lb-list" id="lbList"></div></div>
+  <div class="hint">⬆ SPACE / TAP canvas → JUMP &nbsp;|&nbsp; <svg class="kuro-icon gold" style="width:12px;height:12px;vertical-align:middle"><use href="#ico-coin"/></svg> COLLECT after run</div>
+  <div class="skill-btn-row" style="display:flex;gap:8px;justify-content:center">
+    <button id="openSkillBtn"><svg class="kuro-icon purple" style="width:16px;height:16px"><use href="#ico-brain"/></svg> SKILL TREE</button>
+    <button id="storeBtn"><svg class="kuro-icon blue" style="width:16px;height:16px"><use href="#ico-headphones"/></svg> AUDIO PACKS</button>
+  </div>
+</div>
+
+<!-- ═══ AUDIO PACK STORE ══════════════════════════════════════════ -->
+<div class="store-overlay" id="storeOverlay">
+  <div class="store-backdrop" id="storeBackdrop"></div>
+  <div class="store-panel">
+    <div class="store-header">
+      <div class="store-title">AUDIO PACKS</div>
+      <button class="store-close" id="storeClose">✕ CLOSE</button>
+    </div>
+    <div class="pack-list" id="packList"></div>
+  </div>
+</div>
+
+<!-- ═══ SKILL TREE OVERLAY ═══════════════════════════════════════ -->
+<div id="skill-menu">
+  <div class="skill-backdrop" id="skillBackdrop"></div>
+  <div class="skill-panel">
+    <div class="skill-header">
+      <div class="skill-title">SKILL TREE</div>
+      <button class="skill-close" id="closeSkillBtn">✕ CLOSE</button>
+    </div>
+    <div class="skill-grid" id="skillGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ PURCHASE CONFIRM MODAL ═══════════════════════════════════ -->
+<div class="confirm-modal" id="confirmModal">
+  <div class="confirm-box">
+    <div class="confirm-name" id="confirmPackName"></div>
+    <div class="confirm-cost" id="confirmPackCost"></div>
+    <div class="confirm-desc" id="confirmPackDesc"></div>
+    <div class="confirm-btns">
+      <button id="confirmBuy">✓ BUY</button>
+      <button id="confirmCancel">✕ CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RUNNER NAME ENTRY ══════════════════════════════════════════ -->
+<div id="nameModal">
+  <div class="name-box">
+    <div class="name-title">ENTER YOUR NAME</div>
+    <div class="name-sub">YOUR RUNNER TAG · APPEARS ON THE GLOBAL LEADERBOARD</div>
+    <input id="nameInput" type="text" maxlength="12" placeholder="RUNNER_TAG" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"/>
+    <div class="name-hint">A–Z · 0–9 · UNDERSCORE ONLY · MAX 12</div>
+    <button id="nameSubmit">▶ LOCK IT IN</button>
+  </div>
+</div>
+
+<!-- ═══ SOCIAL SHARE CARD ═════════════════════════════════════════ -->
+<div id="shareModal">
+  <img id="sharePreview" alt="Share card preview"/>
+  <div class="share-btns">
+    <button class="share-btn" id="shareNative">⬆ SHARE</button>
+    <button class="share-btn" id="shareCopy">⎘ COPY</button>
+    <button class="share-btn" id="shareClose">✕ CLOSE</button>
+  </div>
+</div>
+
+<script>
+(function () {
+'use strict';
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 1 — STATIC DATA
+════════════════════════════════════════════════════════════════════ */
+const C = Object.freeze({
+  GY: 310, PW: 26, PH: 30, PX: 110,
+  GRAV: 0.6, MAXFALL: 12,
+  BASESPD: 5, MAXSPD: 13, BASEMS: 1200, MINMS: 550,
+  SCORE_TO_CASH: 0.1, XP_PER_SCORE_PT: 0.015, XP_FLAT_PER_RUN: 8,
+  MAX_UPG: 10,
+  CW: 800, CH: 380,
+});
+
+const RANK_NAMES = Object.freeze(
+  ['ROOKIE','GRINDER','HUSTLER','BALLER','ELITE','LEGEND','MYTH','GOAT']
+);
+const RARITY_MULT = Object.freeze({ common: 1, rare: 2, epic: 3 });
+
+// MISSION TEMPLATES — infinite procedural generation from these archetypes
+const MISSION_TEMPLATES = Object.freeze([
+  { id:'runs',      icon:'🏃', labelFn:(t)=>`Complete ${t} runs`,          type:'runs',      rarity:'common', xpBase:30,  cashBase:5  },
+  { id:'bestscore', icon:'⭐', labelFn:(t)=>`Score ${t} in one run`,       type:'bestRun',   rarity:'common', xpBase:50,  cashBase:8  },
+  { id:'collected', icon:'💰', labelFn:(t)=>`Collect $${t} from runs`,     type:'collected', rarity:'common', xpBase:60,  cashBase:10 },
+  { id:'upgrades',  icon:'📈', labelFn:(t)=>`Purchase ${t} upgrades`,      type:'upgrades',  rarity:'rare',   xpBase:70,  cashBase:12 },
+  { id:'maxspd',    icon:'💨', labelFn:(t)=>`Hit max speed ${t}x`,         type:'maxspd',    rarity:'rare',   xpBase:120, cashBase:25 },
+  { id:'nearmiss',  icon:'⚡', labelFn:(t)=>`Land ${t} near misses`,       type:'nearmiss',  rarity:'rare',   xpBase:90,  cashBase:20 },
+  { id:'bestscore2',icon:'🌟', labelFn:(t)=>`Shatter ${t} score threshold`,type:'bestRun',   rarity:'epic',   xpBase:200, cashBase:45 },
+  { id:'collected2',icon:'💸', labelFn:(t)=>`Bank $${t} in one session`,   type:'collected', rarity:'epic',   xpBase:180, cashBase:40 },
+]);
+
+// Generate a mission definition on-demand — tier scales with player level
+// Returns a stable def object keyed by slot + generation index (never persisted in claimedIds)
+function generateMission(slotIndex, genIndex, playerLevel) {
+  // Seed pseudo-random from slot+gen so the same slot/gen always produces the same mission
+  const seed = (slotIndex * 1000 + genIndex * 7 + playerLevel) % MISSION_TEMPLATES.length;
+  const tpl = MISSION_TEMPLATES[(seed + slotIndex * 3) % MISSION_TEMPLATES.length];
+  const tier = Math.floor(playerLevel / 3); // difficulty tier, grows with rank
+  const scale = Math.pow(1.4, tier);        // target scales exponentially
+  const targetMap = {
+    runs:      Math.max(1, Math.round([1,3,5,10,15,25,50][Math.min(tier,6)] )),
+    bestRun:   Math.round([250,500,1000,2000,3500,5000,8000][Math.min(tier,6)] * (1 + slotIndex * 0.3)),
+    collected: Math.round([50,120,250,500,800,1500,3000][Math.min(tier,6)] * scale * 0.4),
+    upgrades:  Math.max(1, Math.round([2,4,6,8,10,12,15][Math.min(tier,6)])),
+    maxspd:    Math.max(1, tier + 1),
+    nearmiss:  Math.max(3, Math.round(5 * (1 + tier * 0.5))),
+  };
+  const target = targetMap[tpl.type] || 1;
+  const rarityMult = tpl.rarity === 'epic' ? 3 : tpl.rarity === 'rare' ? 2 : 1;
+  return {
+    id: `gen_${slotIndex}_${genIndex}`,
+    icon: tpl.icon,
+    label: tpl.labelFn(target.toLocaleString()),
+    type: tpl.type,
+    target,
+    xp: Math.round(tpl.xpBase * rarityMult * (1 + tier * 0.25)),
+    cash: Math.round(tpl.cashBase * rarityMult * (1 + tier * 0.3)),
+    rarity: tpl.rarity,
+  };
+}
+
+const SKINS = [
+  {id:'default',name:'RUNNER', price:0,   owned:true, body:'#38bdf8',head:'#facc15'},
+  {id:'red',    name:'HEAT',   price:200, owned:false,body:'#ef4444',head:'#fca5a5'},
+  {id:'gold',   name:'HUSTLE', price:500, owned:false,body:'#fbbf24',head:'#fef08a'},
+  {id:'purple', name:'SPECTER',price:800, owned:false,body:'#a78bfa',head:'#ddd6fe'},
+];
+const TRAILS = [
+  {id:'none',  name:'CLEAN',price:0,  owned:true, color:null},
+  {id:'blue',  name:'ICE',  price:150,owned:false,color:'rgba(56,189,248,'},
+  {id:'fire',  name:'FIRE', price:300,owned:false,color:'rgba(251,146,60,'},
+  {id:'gold',  name:'GOLD', price:600,owned:false,color:'rgba(251,191,36,'},
+];
+const GEAR = [
+  { id: 'headphones', name: 'HEADPHONES', price: 150,  owned: false },
+  { id: 'backpack',   name: 'BACKPACK',   price: 300,  owned: false },
+  { id: 'sneakers',   name: 'SNEAKERS',   price: 220,  owned: false },
+  { id: 'shades',     name: 'SHADES',     price: 180,  owned: false },
+  { id: 'chain',      name: 'CHAIN',      price: 450,  owned: false },
+];
+
+const AVATARS = [
+  { id: 'hustler', name: 'HUSTLER',   price: 0,    owned: true,  w: 30, h: 56, color: 'var(--blue)',   power: 'Standard'    },
+  { id: 'tank',    name: 'THE TANK',  price: 800,  owned: false, w: 48, h: 68, color: 'var(--purple)', power: 'High Mass'   },
+  { id: 'ghost',   name: 'THE GHOST', price: 1500, owned: false, w: 26, h: 48, color: 'var(--green)',  power: 'Low Profile' },
+];
+
+const DISTRICTS = [
+  { id:'neon_quarter',  name:'NEON QUARTER',   icon:'🌃', price:0,     owned:true,  color:'#38bdf8', skyTop:'#050d1a', skyBot:'#0d1f35', groundLine:'rgba(56,189,248,0.5)',  obstacleTop:'#f87171', obstacleBot:'#b91c1c', sub:'The starting grid. Neon-lit streets.', perks:['Standard physics','Standard economy'], reqRank:0 },
+  { id:'chrome_bridge', name:'CHROME BRIDGE',  icon:'🌉', price:1500,  owned:false, color:'#94a3b8', skyTop:'#07090f', skyBot:'#141e2e', groundLine:'rgba(148,163,184,0.5)', obstacleTop:'#cbd5e1', obstacleBot:'#475569', sub:'Industrial overpass. Wind resistance.', perks:['+10% score multi','Crosswind obstacle pattern'], reqRank:3 },
+  { id:'acid_market',   name:'ACID MARKET',    icon:'🟢', price:3500,  owned:false, color:'#22c55e', skyTop:'#020b04', skyBot:'#051a09', groundLine:'rgba(34,197,94,0.5)',   obstacleTop:'#4ade80', obstacleBot:'#15803d', sub:'Underground bazaar. Chaos spawns.', perks:['+15% cash gain','High-density obstacles'], reqRank:5 },
+  { id:'violet_heights',name:'VIOLET HEIGHTS', icon:'🟣', price:6000,  owned:false, color:'#a78bfa', skyTop:'#0a0514', skyBot:'#1a0d2e', groundLine:'rgba(167,139,250,0.5)', obstacleTop:'#c4b5fd', obstacleBot:'#6d28d9', sub:'Executive tier. Audio-reactive district.', perks:['+20% audio bonus','Double bass FX'],        reqRank:8 },
+  { id:'kuro_apex',     name:'KURO APEX',      icon:'⚫', price:15000, owned:false, color:'#fbbf24', skyTop:'#000000', skyBot:'#0a0a0a', groundLine:'rgba(251,191,36,0.8)',   obstacleTop:'#fde68a', obstacleBot:'#b45309', sub:'Maximum tier. No safety net.', perks:['3× all multipliers','Legendary cosmetics'],  reqRank:12 },
+  ];
+/* ── Audio Packs — unlocked with in-game capital ── */
+// Audio served from GitHub raw CDN — works from any hosting context
+/* ── Audio served from Render deployment — absolute URLs, correct MIME, no ambiguity ── */
+const _AUDIO_BASE = 'https://kuro-runner.onrender.com/assets/audio/';
+const AUDIO_PACKS = Object.freeze({
+  kuro_vol1: {
+    id: 'kuro_vol1', name: 'KURO VOL.1', cost: 0,
+    track:      _AUDIO_BASE + 'kuro_vol1.mp3',
+    preview:    _AUDIO_BASE + 'kuro_vol1_preview.mp3',
+    trackCount: 3, duration: '9 min',
+    tracks: ['Neon Pulse', 'City Drift', 'After Hours'],
+    modifiers: { speed: 1.0, forgiveness: 1.0, spawnRate: 1.0 },
+    visuals: { primary: '#38bdf8', secondary: '#a78bfa' },
+    desc: 'The foundation. Classic neon-link rhythm.',
+  },
+  midnight_tokyo: {
+    id: 'midnight_tokyo', name: 'MIDNIGHT TOKYO', cost: 800,
+    track:      _AUDIO_BASE + 'midnight_tokyo.mp3',
+    preview:    _AUDIO_BASE + 'midnight_tokyo_preview.mp3',
+    trackCount: 3, duration: '11 min',
+    tracks: ['Shibuya Nights', 'Rain Circuit', 'Neon Alley'],
+    modifiers: { speed: 1.08, forgiveness: 1.0, spawnRate: 1.15 },
+    visuals: { primary: '#ec4899', secondary: '#22d3ee' },
+    desc: '+8% speed. +15% obstacle density. High risk, high reward.',
+  },
+  underground_sa: {
+    id: 'underground_sa', name: 'UNDERGROUND SA', cost: 1500,
+    track:      _AUDIO_BASE + 'underground_sa.mp3',
+    preview:    _AUDIO_BASE + 'underground_sa_preview.mp3',
+    trackCount: 3, duration: '12 min',
+    tracks: ['Amapiano Drift', 'Taxi Bounce', 'Deep Groove'],
+    modifiers: { speed: 1.05, forgiveness: 1.18, spawnRate: 1.0 },
+    visuals: { primary: '#fbbf24', secondary: '#22c55e' },
+    desc: '+5% speed. +18% earn forgiveness. Smooth operator.',
+  },
+});
+
+const LB_MOCK = [
+  {name:'GHOST_X',   score:8840},
+  {name:'NEON_RUSH', score:7213},
+  {name:'BLAZE_99',  score:6480},
+  {name:'H$TLE_KNG', score:5920},
+  {name:'DARKRUNNER',score:4371},
+  {name:'SPEEDBOI',  score:3100},
+];
+
+// ── Leaderboard config — replace with your deployed worker URL ──
+const LB_WORKER_URL = 'https://kuro-leaderboard.YOUR-SUBDOMAIN.workers.dev';
+let _lbCache = null;        // last fetched scores — used as offline fallback
+let _lbFetching = false;    // debounce concurrent fetches
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 2 — GAMESTATE (clean, serializable)
+════════════════════════════════════════════════════════════════════ */
+const GS = {
+  phase: 'IDLE',
+  passiveUnlocked: false,
+  frame: 0,
+  capital: 0,
+  runScore: 0,
+  runScoreBuffer: 0,
+  totalScore: 0,
+  bestRunScore: 0,
+  playerXP: 0,
+  pendingRankUpName: null,
+  incomeLevel: 1,
+  incomeCost: 50,
+  jumpLevel: 1,
+  jumpCost: 75,
+  scoreLevel: 1,
+  scoreCost: 100,
+  equippedSkin: SKINS[0],
+  equippedTrail: TRAILS[0],
+  equippedGear: null,
+  equippedAvatar: AVATARS[0],
+  activeDistrict: DISTRICTS[0],
+  player: {
+    x: C.PX,
+    y: C.GY - C.PH,
+    w: C.PW,
+    h: C.PH,
+    vy: 0,
+    grounded: true,
+    sliding: false,       // true while slide action is active
+    slideTimer: 0,        // counts down from slide duration
+    slideCooldown: 0,     // prevents slide spam
+  },
+  obstacles: [],
+  particles: [],
+  groundOffset: 0,
+  obstacleId: 0,
+  speed: 5,
+  spawnMs: 1200,
+  spawnTimer: 0,
+  runStart: 0,
+  newBestThisRun: false,
+  hitMaxSpd: false,
+  flawlessMult: 1.0,
+  comboJumps: 0,
+  lastJumpTime: 0,
+  mStats: { runs:0, bestRun:0, total:0, collected:0, upgrades:0, incLv:1, jmpLv:1, scrLv:1, maxspd:0, nearmiss:0 },
+  activeMissionSlots: [null, null, null],
+  missionSlotState: [
+    { progress:0, ready:false, claimed:false },
+    { progress:0, ready:false, claimed:false },
+    { progress:0, ready:false, claimed:false },
+  ],
+  // Infinite mission system: each slot tracks how many missions it has generated
+  missionSlotGen: [0, 0, 0],
+  audio: {
+    bass: 0,
+    mid: 0,
+    treble: 0,
+    amplitude: 0,
+    active: false,
+    micActive: false,
+  },
+  audioFx: {
+    glowIntensity: 0,
+    bassSparkle: 0,
+    bgFlicker: 0,
+    xpBrightness: 1,
+    capitalGlow: 0,
+  },
+  sfxQueue: [],
+  toastQueue: [],
+  domEvents: [],
+  skillTree: {
+    velocityLevel: 0,
+    flowLevel: 0,
+    capitalLevel: 0,
+    syncLevel: 0,
+    sensorLevel: 0,
+    agilityLevel: 0,      // reduces slide cooldown, extends slide window
+  },
+  boss: {
+    active: false,
+    phase: 0,
+    hp: 100,
+    maxHp: 100,
+    timer: 0,
+    attackCooldown: 0,
+    preSpeed: 5,
+    defeated: false,
+    intro: false,
+    introTimer: 0,
+    pulse: 0,           // phase 1 rhythm counter
+    targetY: 230,       // player Y tracker for adaptive spawning
+    name: 'THE SIGNAL',
+    signatureColor: '#a855f7',
+  },
+  audioMode: 0,         // 0=AMAPIANO 1=INDUSTRIAL 2=SILENT
+  ownedPacks: ['kuro_vol1'],
+  equippedPack: 'kuro_vol1',   // kuro_vol1 is free and always owned — safe default
+  _lastEquippedPack: null,
+  preview: {
+    active: false,
+    packId: null,
+    timeout: 0,
+  },
+  streak: {
+    count: 0,
+    active: false,
+    timer: 0,
+  },
+  loopLevel: 0,        // increments each time THE SIGNAL is defeated
+  confirmOpen: false,  // blocks preview while confirm modal is open
+  bossWarning: false,
+  feedback: {
+    shake: 0,
+    flash: 0,
+  },
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 3 — INPUT STATE
+════════════════════════════════════════════════════════════════════ */
+const INPUT = {
+  jumpQueued: false, startRunIntent: false, collectIntent: false,
+  upgradeInc: false, upgradeJmp: false, upgradeScr: false,
+  buySkinId: null, equipSkinId: null,
+  buyTrailId: null, equipTrailId: null,
+  buyGearId: null, equipGearId: null,
+  buyAvatarId: null, equipAvatarId: null,
+  enableAudio: false, claimMissionSlot: null,
+  buyDistrictId: null, enterDistrictId: null,
+  upgradeSkill: null,
+  selectPack: null,
+  previewPack: null,
+  slideQueued: false,
+};
+function INPUT_flush() {
+  INPUT.jumpQueued = false; INPUT.startRunIntent = false; INPUT.collectIntent = false;
+  INPUT.upgradeInc = false; INPUT.upgradeJmp = false; INPUT.upgradeScr = false;
+  INPUT.buySkinId = null; INPUT.equipSkinId = null;
+  INPUT.buyTrailId = null; INPUT.equipTrailId = null;
+  INPUT.buyGearId = null; INPUT.equipGearId = null;
+  INPUT.buyAvatarId = null; INPUT.equipAvatarId = null;
+  INPUT.enableAudio = false; INPUT.claimMissionSlot = null;
+  INPUT.buyDistrictId = null; INPUT.enterDistrictId = null;
+  INPUT.upgradeSkill = null;
+  INPUT.selectPack = null;
+  INPUT.previewPack = null;
+  INPUT.slideQueued = false;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 4 — PURE HELPERS
+════════════════════════════════════════════════════════════════════ */
+function xpForLevel(n) { return n <= 1 ? 0 : Math.floor(200 * Math.pow(n - 1, 2.1)); }
+function getLevelFromXP(xp) { let lv = 1; while (xpForLevel(lv + 1) <= xp) lv++; return lv; }
+function getRankNameFromXP(xp) { const lv = getLevelFromXP(xp); const idx = Math.min(lv - 1, RANK_NAMES.length - 1); return RANK_NAMES[idx] + (lv > RANK_NAMES.length ? ' ' + (lv - RANK_NAMES.length + 1) : ''); }
+function getXPFraction(xp) { const lv = getLevelFromXP(xp); const base = xpForLevel(lv); const span = xpForLevel(lv + 1) - base; return span > 0 ? Math.min(1, (xp - base) / span) : 1; }
+function jumpForce(jmpLv) { return -10 - (jmpLv - 1) * 2; }
+function scoreMult(scrLv) { return 1 + (scrLv - 1) * 0.1; }
+function incomeSec(incLv) { return (incLv - 1) * 0.2; }
+function missionProgress(def, mStats) { switch (def.type) {
+  case 'runs': return mStats.runs; case 'bestRun': return mStats.bestRun;
+  case 'total': return mStats.total; case 'collected': return mStats.collected;
+  case 'upgrades': return mStats.upgrades; case 'maxspd': return mStats.maxspd;
+  case 'nearmiss': return mStats.nearmiss;
+  default: return 0;
+} }
+function drawMissionSlot(claimedIds, activeIds, playerLevel) {
+  const available = MISSION_POOL.map((m,i)=>({m,i})).filter(({m})=>!claimedIds.has(m.id)&&!activeIds.includes(m.id));
+  if (!available.length) return null;
+  const lf = Math.min(1, (playerLevel-1)/10);
+  const weights = available.map(({m})=> m.rarity==='epic' ? 0.2+lf*0.8 : m.rarity==='rare' ? 0.3+lf*0.5 : 0.5-lf*0.2);
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random() * total;
+  for (let i=0;i<weights.length;i++) { r -= weights[i]; if (r<=0) return available[i].i; }
+  return available[0].i;
+}
+function playerCollidesWithObstacle(px, py, w, h, obstacles) {
+  for (const o of obstacles) {
+    if (o.boss) continue; // boss obstacles handled separately
+    if (o.high) {
+      // High obstacle — floating barrier that can be slid under
+      // Collision only when player body overlaps the obstacle box vertically AND horizontally
+      const oy = o.y, oh = o.h || 30, ow = o.w || 20;
+      const horizOverlap = px < o.x + ow && px + w > o.x;
+      const vertOverlap  = py < oy + oh && py + h > oy;
+      if (horizOverlap && vertOverlap) return true;
+    } else {
+      // Ground obstacle — collides with ground-level hitbox
+      if (px < o.x + 20 && px + w > o.x && py < C.GY && py + h > C.GY - 32) return true;
+    }
+  }
+  return false;
+}
+function playerCollidesWithBossObstacle(px, py, w, h, obstacles) {
+  for (const o of obstacles) {
+    if (!o.boss) continue;
+    if (o.inverted) continue;  // inversion wall safe gap — pass through
+    if (o.fake) continue;      // ghost decoys — pass through
+    if (o.type === 'beam-warning') continue; // telegraph only — not lethal yet
+    const ow = o.w || 22, oh = o.h || 22;
+    if (px < o.x + ow && px + w > o.x && py < o.y + oh && py + h > o.y) return true;
+  }
+  return false;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 5 — PERSISTENCE
+════════════════════════════════════════════════════════════════════ */
+const SKILL_DEFS = [
+  { key: 'velocityLevel', max: 5, icon: '⚡', name: 'VELOCITY',  desc: '+10% base speed per level', baseCost: 120,  costMult: 1.8 },
+  { key: 'flowLevel',     max: 5, icon: '🎵', name: 'FLOW',      desc: '+15% bass sensitivity',    baseCost: 150,  costMult: 1.9 },
+  { key: 'capitalLevel',  max: 5, icon: '💰', name: 'CAPITAL',   desc: '+8% cash earn rate',       baseCost: 100,  costMult: 1.7 },
+  { key: 'syncLevel',     max: 5, icon: '📡', name: 'SYNC',      desc: '+5% amplitude boost',      baseCost: 130,  costMult: 1.85 },
+  { key: 'sensorLevel',   max: 3, icon: '👁', name: 'SENSOR',    desc: 'Obstacle preview range',   baseCost: 250,  costMult: 2.2 },
+  { key: 'agilityLevel',  max: 3, icon: '💨', name: 'AGILITY',   desc: 'Longer slide, shorter cooldown', baseCost: 200, costMult: 2.0 },
+];
+
+const Persist = {
+  SAVE_VERSION: 3,
+  // Called once at init — clears stale keys from old versions
+  migrate() {
+    try {
+      const savedVer = parseInt(localStorage.getItem('kuro_save_version') || '0', 10);
+      if (savedVer < 3) {
+        // v2 → v3: equippedPack was null in old saves, wipe pack state so loadPacks defaults correctly
+        localStorage.removeItem('kuro_packs');
+        localStorage.setItem('kuro_save_version', '3');
+      }
+    } catch {}
+  },
+  loadBest() { try { return parseFloat(localStorage.getItem('hc_best')||'0'); } catch { return 0; } },
+  saveBest(v) { try { localStorage.setItem('hc_best', String(v)); } catch {} },
+  saveTree() { try { localStorage.setItem('kuro_tree', JSON.stringify(GS.skillTree)); } catch {} },
+  loadTree() {
+    try {
+      const raw = localStorage.getItem('kuro_tree');
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data && typeof data === 'object') {
+        SKILL_DEFS.forEach(def => {
+          if (typeof data[def.key] === 'number') GS.skillTree[def.key] = Math.min(data[def.key], def.max);
+        });
+      }
+    } catch { try { localStorage.removeItem('kuro_tree'); } catch {} }
+  },
+  loadGear() {
+    try {
+      const raw = localStorage.getItem('hc_gear');
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data.version !== this.SAVE_VERSION) { localStorage.removeItem('hc_gear'); return; }
+      data.owned.forEach(s => { const g = GEAR.find(g => g.id === s.id); if (g) g.owned = s.owned; });
+      if (data.equippedId) GS.equippedGear = GEAR.find(g => g.id === data.equippedId && g.owned) || null;
+    } catch { try { localStorage.removeItem('hc_gear'); } catch {} }
+  },
+  saveGear() {
+    try {
+      localStorage.setItem('hc_gear', JSON.stringify({
+        version: this.SAVE_VERSION,
+        owned: GEAR.map(g => ({ id: g.id, owned: g.owned })),
+        equippedId: GS.equippedGear ? GS.equippedGear.id : null,
+      }));
+    } catch {}
+  },
+  loadAvatars() {
+    try {
+      const raw = localStorage.getItem('hc_avatars');
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data.version !== this.SAVE_VERSION) { localStorage.removeItem('hc_avatars'); return; }
+      data.owned.forEach(a => { const av = AVATARS.find(av => av.id === a.id); if (av) av.owned = a.owned; });
+      if (data.equippedId) {
+        const equipped = AVATARS.find(a => a.id === data.equippedId && a.owned);
+        if (equipped) GS.equippedAvatar = equipped;
+      }
+    } catch { try { localStorage.removeItem('hc_avatars'); } catch {} }
+  },
+  saveAvatars() {
+    try {
+      localStorage.setItem('hc_avatars', JSON.stringify({
+        version: this.SAVE_VERSION,
+        owned: AVATARS.map(a => ({ id: a.id, owned: a.owned })),
+        equippedId: GS.equippedAvatar ? GS.equippedAvatar.id : null,
+      }));
+    } catch {}
+  },
+  savePacks() {
+    try {
+      localStorage.setItem('kuro_packs', JSON.stringify({
+        owned: GS.ownedPacks,
+        equipped: GS.equippedPack,
+      }));
+    } catch {}
+  },
+  loadPacks() {
+    try {
+      const raw = localStorage.getItem('kuro_packs');
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      // Only restore valid pack ids that still exist in AUDIO_PACKS
+      if (Array.isArray(data.owned)) {
+        GS.ownedPacks = data.owned.filter(id => AUDIO_PACKS[id]);
+        if (!GS.ownedPacks.includes('kuro_vol1')) GS.ownedPacks.unshift('kuro_vol1');
+      }
+      if (data.equipped && AUDIO_PACKS[data.equipped] && GS.ownedPacks.includes(data.equipped)) {
+        GS.equippedPack = data.equipped;
+      } else {
+        // Old save had null or invalid equippedPack — guarantee kuro_vol1 is always active
+        GS.equippedPack = 'kuro_vol1';
+      }
+    } catch { try { localStorage.removeItem('kuro_packs'); } catch {} }
+  },
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 6 — SIMULATION MODULES (SimCore, SimEco, SimMissions)
+════════════════════════════════════════════════════════════════════ */
+
+// SimInput (handles input and state changes)
+const SimInput = {
+  tick() {
+    // JUMP — blocked while sliding
+    if (INPUT.jumpQueued && GS.phase === 'RUNNING' && GS.player.grounded && !GS.player.sliding) {
+      const now = performance.now();
+      if (now - GS.lastJumpTime < 800) {
+        GS.comboJumps++;
+        if (GS.comboJumps >= 3) GS.domEvents.push({ type: 'comboPop', payload: { text: `${GS.comboJumps}x COMBO!`, color: 'var(--orange)' } });
+      } else GS.comboJumps = 1;
+      GS.lastJumpTime = now;
+      GS.player.vy = jumpForce(GS.jumpLevel);
+      GS.player.grounded = false;
+      for (let i = 0; i < 6; i++) GS.particles.push({ x: C.PX + C.PW/2, y: C.GY, vx: (Math.random()-0.5)*3, vy: -(Math.random()*2+1), life: 1, color: GS.equippedSkin.body, isTrail: false });
+      GS.sfxQueue.push({ type: 'jump' });
+    }
+    // SLIDE — only while running, grounded, not already sliding, cooldown expired
+    if (INPUT.slideQueued && GS.phase === 'RUNNING' && GS.player.grounded && !GS.player.sliding && GS.player.slideCooldown <= 0) {
+      const agLv = GS.skillTree.agilityLevel || 0;
+      GS.player.sliding      = true;
+      GS.player.slideTimer   = 0.55 + agLv * 0.08;  // +0.08s per agility level
+      GS.player.slideCooldown = 1.2 - agLv * 0.15;  // tighter cooldown at higher agility
+      // Slide dust particles
+      for (let i = 0; i < 8; i++) GS.particles.push({ x: GS.player.x + 2, y: C.GY - 2, vx: -(GS.speed * 0.4 + Math.random() * 2), vy: -(Math.random() * 1.2), life: 0.5, color: '#a855f720', isTrail: true });
+      GS.sfxQueue.push({ type: 'collision' }); // repurpose collision sfx as a short scrape sound
+    }
+    if (INPUT.startRunIntent) {
+      if (GS.phase === 'GAME_OVER') SimInput._returnToIdle();
+      if (GS.phase === 'IDLE') SimInput._startRun();
+    }
+    if (INPUT.collectIntent) SimInput._collectEarnings();
+    if (INPUT.upgradeInc) SimInput._upgrade('inc');
+    if (INPUT.upgradeJmp) SimInput._upgrade('jmp');
+    if (INPUT.upgradeScr) SimInput._upgrade('scr');
+    if (INPUT.buySkinId) SimInput._buySkin(INPUT.buySkinId);
+    if (INPUT.equipSkinId) SimInput._equipSkin(INPUT.equipSkinId);
+    if (INPUT.buyTrailId) SimInput._buyTrail(INPUT.buyTrailId);
+    if (INPUT.equipTrailId) SimInput._equipTrail(INPUT.equipTrailId);
+    if (INPUT.buyGearId) SimInput._buyGear(INPUT.buyGearId);
+    if (INPUT.equipGearId) SimInput._equipGear(INPUT.equipGearId);
+    if (INPUT.buyAvatarId) SimInput._buyAvatar(INPUT.buyAvatarId);
+    if (INPUT.equipAvatarId) SimInput._equipAvatar(INPUT.equipAvatarId);
+    if (INPUT.claimMissionSlot !== null) SimMissions.claim(INPUT.claimMissionSlot);
+    if (INPUT.enableAudio) SimAudio.toggle();
+    if (INPUT.buyDistrictId) SimInput._buyDistrict(INPUT.buyDistrictId);
+    if (INPUT.enterDistrictId) SimInput._enterDistrict(INPUT.enterDistrictId);
+    if (INPUT.upgradeSkill) SimInput._upgradeSkill(INPUT.upgradeSkill);
+    if (INPUT.selectPack)   SimInput._selectPack(INPUT.selectPack);
+    if (INPUT.previewPack)  SimInput._previewPack(INPUT.previewPack);
+  },
+  _startRun() {
+    GS.phase = 'RUNNING';
+    GS.runScore = 0;
+    GS.newBestThisRun = false;
+    GS.hitMaxSpd = false;
+    GS.comboJumps = 0;
+    GS.obstacles = [];
+    GS.particles = [];
+    GS.speed = C.BASESPD;
+    GS.spawnMs = C.BASEMS;
+    GS.flawlessMult = 1.0;
+    GS.obstacleId = 0;
+    GS.runStart = performance.now();
+    GS.spawnTimer = performance.now();
+    GS.player.y = C.GY - GS.equippedAvatar.h;
+    GS.player.vy = 0;
+    GS.player.grounded = true;
+    GS.player.sliding = false;
+    GS.player.slideTimer = 0;
+    GS.player.slideCooldown = 0;
+    // Reset boss state and warning
+    GS.boss.active = false;
+    GS.boss.defeated = false;
+    GS.boss.hp = GS.boss.maxHp;
+    GS.boss.phase = 0;
+    GS.boss.timer = 0;
+    GS.bossWarning = false;
+    GS.feedback.shake = 0;
+    GS.feedback.flash = 0;
+    // Music is started directly in startBtn.onclick (gesture context).
+    // Do NOT push a playMusic domEvent here — it would fire in the next rAF
+    // frame and call stop() on the audio that's already loading, killing it.
+  },
+  _returnToIdle() {
+    GS.phase = 'IDLE';
+    GS.player.y = C.GY - GS.equippedAvatar.h;
+    GS.player.vy = 0;
+    GS.player.grounded = true;
+    GS.obstacles = [];
+    GS.particles = [];
+    GS.domEvents.push({ type: 'stopMusic' });
+  },
+  _collectEarnings() {
+    if (GS.phase === 'RUNNING') return;
+    if (GS.runScoreBuffer > 0) {
+      let bonusMult = 1;
+      if (GS.audio.active && GS.audio.mid) bonusMult = 1 + (GS.audio.mid * 0.3);
+      // Apply soft inflation scale: high scores earn capital at a diminishing rate
+      const inflationScale = 1 / (1 + GS.runScoreBuffer / 100000);
+      const gain = GS.runScoreBuffer * C.SCORE_TO_CASH * bonusMult * inflationScale;
+      GS.capital = Math.max(0, GS.capital + gain);
+      GS.mStats.collected += gain;
+      GS.runScoreBuffer = 0;
+      SimEco.addXP(Math.floor(gain));
+      GS.domEvents.push({ type: 'cashPop', payload: { amount: gain, leftPct: '42%' } });
+      GS.toastQueue.push({ msg: `💰 +$${gain.toFixed(1)} collected`, color: '#22c55e', cat: 'collect' });
+      GS.sfxQueue.push({ type: 'reward' });
+    }
+    if (GS.phase === 'GAME_OVER') SimInput._returnToIdle();
+  },
+  _upgrade(type) {
+    const map = { inc: { lvKey:'incomeLevel', costKey:'incomeCost', mult:1.65, label:'Income' }, jmp: { lvKey:'jumpLevel', costKey:'jumpCost', mult:1.75, label:'Jump' }, scr: { lvKey:'scoreLevel', costKey:'scoreCost', mult:1.85, label:'Score' } };
+    const cfg = map[type];
+    if (!cfg) return;
+    if (GS[cfg.lvKey] >= C.MAX_UPG) return;
+    if (GS.capital < GS[cfg.costKey]) return;
+    GS.capital = Math.max(0, GS.capital - GS[cfg.costKey]);
+    GS[cfg.lvKey]++;
+    GS[cfg.costKey] = Math.floor(GS[cfg.costKey] * cfg.mult);
+    GS.mStats.upgrades++;
+    GS.mStats.incLv = GS.incomeLevel; GS.mStats.jmpLv = GS.jumpLevel; GS.mStats.scrLv = GS.scoreLevel;
+    GS.toastQueue.push({ msg: `✨ ${cfg.label} upgraded`, color: '#a78bfa', cat: 'upg_' + type });
+    GS.sfxQueue.push({ type: 'reward' });
+  },
+  _buySkin(id) { const skin = SKINS.find(s=>s.id===id); if (!skin || skin.owned || GS.capital < skin.price) { if(skin&&!skin.owned&&GS.capital<skin.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - skin.price); skin.owned = true; GS.toastQueue.push({ msg:`✨ ${skin.name} unlocked`, color:'#fbbf24', cat:'buy_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _equipSkin(id) { const skin = SKINS.find(s=>s.id===id && s.owned); if (!skin) return; GS.equippedSkin = skin; GS.toastQueue.push({ msg:`🎨 ${skin.name} equipped`, color:'#38bdf8', cat:'equip_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _buyTrail(id) { const trail = TRAILS.find(t=>t.id===id); if (!trail || trail.owned || GS.capital < trail.price) { if(trail&&!trail.owned&&GS.capital<trail.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - trail.price); trail.owned = true; GS.toastQueue.push({ msg:`✨ ${trail.name} trail unlocked`, color:'#fbbf24', cat:'buy_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _equipTrail(id) { const trail = TRAILS.find(t=>t.id===id && t.owned); if (!trail) return; GS.equippedTrail = trail; GS.toastQueue.push({ msg:`💫 ${trail.name} trail equipped`, color:'#38bdf8', cat:'equip_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _buyGear(id) { const gear = GEAR.find(g=>g.id===id); if (!gear || gear.owned || GS.capital < gear.price) { if(gear&&!gear.owned&&GS.capital<gear.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - gear.price); gear.owned = true; Persist.saveGear(); GS.toastQueue.push({ msg:`✨ ${gear.name} unlocked`, color:'#fbbf24', cat:'buy_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _equipGear(id) { const gear = GEAR.find(g=>g.id===id && g.owned); if (!gear) return; GS.equippedGear = gear; Persist.saveGear(); GS.toastQueue.push({ msg:`🎧 ${gear.name} equipped`, color:'#38bdf8', cat:'equip_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _buyAvatar(id) { const av = AVATARS.find(a=>a.id===id); if (!av || av.owned || GS.capital < av.price) { if(av&&!av.owned&&GS.capital<av.price) GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'cantbuy' }); return; } GS.capital = Math.max(0, GS.capital - av.price); av.owned = true; Persist.saveAvatars(); GS.toastQueue.push({ msg:`✨ ${av.name} unlocked`, color:'#fbbf24', cat:'buy_avatar_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _equipAvatar(id) { const av = AVATARS.find(a=>a.id===id && a.owned); if (!av) return; GS.equippedAvatar = av; GS.player.y = Math.min(GS.player.y, C.GY - av.h); if (GS.player.y + av.h > C.GY) GS.player.y = C.GY - av.h; Persist.saveAvatars(); GS.toastQueue.push({ msg:`👤 ${av.name} equipped`, color:'#38bdf8', cat:'equip_avatar_'+id }); GS.domEvents.push({ type: 'shopChanged' }); },
+  _buyDistrict(id) {
+    const d = DISTRICTS.find(d => d.id === id);
+    if (!d || d.owned) return;
+    const playerRank = getLevelFromXP(GS.playerXP);
+    if (playerRank < d.reqRank) { GS.toastQueue.push({ msg:`🔒 Reach Rank ${d.reqRank} to unlock`, color:'#ef4444', cat:'district_rank_'+id }); return; }
+    if (GS.capital < d.price) { GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'district_broke_'+id }); return; }
+    GS.capital = Math.max(0, GS.capital - d.price);
+    d.owned = true;
+    GS.activeDistrict = d;
+    triggerWarp();
+    GS.toastQueue.push({ msg:`🌆 ${d.name} unlocked & activated`, color: d.color, cat:'district_buy_'+id });
+    GS.sfxQueue.push({ type: 'reward' });
+    GS.domEvents.push({ type: 'districtChanged' });
+  },
+  _enterDistrict(id) {
+    const d = DISTRICTS.find(d => d.id === id && d.owned);
+    if (!d) return;
+    if (GS.phase === 'RUNNING') { GS.toastQueue.push({ msg:'⚠ Finish your run first', color:'#fbbf24', cat:'district_running' }); return; }
+    GS.activeDistrict = d;
+    GS.obstacles = [];
+    GS.particles = [];
+    triggerWarp();
+    GS.toastQueue.push({ msg:`🌆 Entered ${d.name}`, color: d.color, cat:'district_enter_'+id });
+    GS.domEvents.push({ type: 'districtChanged' });
+  },
+  _upgradeSkill(key) {
+    const def = SKILL_DEFS.find(d => d.key === key);
+    if (!def) return;
+    const currentLevel = GS.skillTree[key];
+    if (currentLevel >= def.max) return;
+    const cost = Math.round(def.baseCost * Math.pow(def.costMult, currentLevel));
+    if (GS.capital < cost) { GS.toastQueue.push({ msg:'💰 Not enough capital', color:'#ef4444', cat:'skill_broke_'+key }); return; }
+    GS.capital = Math.max(0, GS.capital - cost);
+    GS.skillTree[key]++;
+    Persist.saveTree();
+    GS.toastQueue.push({ msg:`🧠 ${def.name} Lv${GS.skillTree[key]} unlocked`, color:'#a78bfa', cat:'skill_'+key });
+    GS.sfxQueue.push({ type: 'reward' });
+    GS.domEvents.push({ type: 'skillChanged' });
+  },
+  _selectPack(id) {
+    const pack = AUDIO_PACKS[id];
+    if (!pack) return;
+    resetPreview();   // clear any running preview before state change
+    if (!GS.ownedPacks.includes(id)) {
+      if (pack.cost === 0) {
+        // Free pack — add to owned immediately
+        GS.ownedPacks.push(id);
+      } else {
+        // Paid pack — redirect to Stripe; unlock granted via window.unlockPack webhook
+        GS.domEvents.push({ type: 'purchaseRequest', packId: id });
+        return;
+      }
+    }
+    GS.equippedPack = id;
+    // Pre-fetch audio blob into cache so play() fires instantly from gesture context
+    if (pack.track) GameMusic.prefetch(pack.track);
+    // Stop preview if this pack was being previewed
+    if (GS.preview.packId === id) {
+      clearTimeout(GS.preview.timeout);
+      GS.preview.active = false;
+      GS.preview.packId = null;
+      PreviewAudio.stop();
+    }
+    Persist.savePacks();
+    GS.toastQueue.push({ msg:`🎧 ${pack.name} equipped`, color: pack.visuals.primary, cat:'pack_equip_'+id });
+    if (pack.track) GS.domEvents.push({ type: 'playMusic', url: pack.track });
+    GS.domEvents.push({ type: 'packChanged' });
+    vibrate(50);
+  },
+  _previewPack(id) {
+    const pack = AUDIO_PACKS[id];
+    if (!pack) return;
+    // Toggle: previewing same pack stops it
+    if (GS.preview.packId === id) {
+      clearTimeout(GS.preview.timeout);
+      GS.preview.active = false;
+      GS.preview.packId = null;
+      GS.preview.timeout = 0;
+      PreviewAudio.stop();
+      GS.domEvents.push({ type: 'packChanged' });
+      return;
+    }
+    // Stop any prior preview state
+    clearTimeout(GS.preview.timeout);
+    // Set GS preview state (audio was already started by click handler in gesture context)
+    GS.preview.active = true;
+    GS.preview.packId = id;
+    vibrate(30);
+    GS.toastQueue.push({ msg: `▶ ${pack.name} — PREVIEWING`, color: pack.visuals.primary, cat: 'pack_preview_' + id });
+    // Auto-clear state after 10s (mirrors PreviewAudio's internal 10s stop)
+    GS.preview.timeout = setTimeout(() => {
+      GS.preview.active = false;
+      GS.preview.packId = null;
+      GS.preview.timeout = 0;
+      PreviewAudio.stop();
+      pushToast('Tap again to unlock full playlist', pack.visuals.primary, 'preview_end_' + id);
+      GS.domEvents.push({ type: 'packChanged' });
+    }, 10000);
+    GS.domEvents.push({ type: 'packChanged' });
+  },
+};
+
+// SimCore (physics, obstacles)
+const SimCore = {
+  // Returns effective player height — shrunk during slide
+  _slideH() {
+    return GS.player.sliding
+      ? Math.floor(GS.equippedAvatar.h * 0.42)
+      : GS.equippedAvatar.h;
+  },
+  update(dt, nowMs) {
+    if (GS.phase === 'RUNNING') {
+      this._updateDifficulty(nowMs);
+      this._spawnObstacle(nowMs);
+      this._moveObstacles(dt);
+      this._updateSlide(dt);
+      this._updatePlayer(dt);
+      this._emitTrail();
+      this._checkNearMisses();
+      const ph = this._slideH();
+      if (playerCollidesWithObstacle(GS.player.x, GS.player.y, GS.equippedAvatar.w, ph, GS.obstacles)) {
+        SimEco.triggerGameOver();
+      }
+      if (GS.boss.active && !GS.boss.intro &&
+          playerCollidesWithBossObstacle(GS.player.x, GS.player.y, GS.equippedAvatar.w, ph, GS.obstacles)) {
+        SimEco.triggerGameOver();
+      }
+      // Boss warning system (cinematic pre-alert)
+      if (GS.runScore > 1800 && !GS.boss.active && !GS.bossWarning) {
+        GS.bossWarning = true;
+        GS.toastQueue.push({ msg: '⚠️ SIGNAL DETECTED', color: '#a855f7', cat: 'boss_warning' });
+      }
+      // Boss trigger at 1800 score
+      if (GS.runScore >= 1800 && !GS.boss.active && !GS.boss.defeated) {
+        BossSystem.start();
+      }
+    }
+    this._updateParticles(dt);
+    if (GS.phase === 'RUNNING') GS.groundOffset = (GS.groundOffset + GS.speed * 0.4) % 50;
+  },
+  _updateSlide(dt) {
+    // Tick cooldown always
+    if (GS.player.slideCooldown > 0) GS.player.slideCooldown -= dt;
+    if (!GS.player.sliding) return;
+    GS.player.slideTimer -= dt;
+    if (GS.player.slideTimer <= 0) {
+      GS.player.sliding = false;
+      GS.player.slideTimer = 0;
+    }
+    // During slide: keep player pinned to ground (no airborne slide)
+    if (GS.player.grounded) {
+      GS.player.y = C.GY - GS.equippedAvatar.h;
+    }
+  },
+  _updatePlayer(dt) {
+    GS.player.vy += C.GRAV * (dt * 60);
+    if (GS.player.vy > C.MAXFALL) GS.player.vy = C.MAXFALL;
+    GS.player.y += GS.player.vy * (dt * 60);
+    const bottom = GS.player.y + GS.equippedAvatar.h;
+    if (bottom >= C.GY) {
+      GS.player.y = C.GY - GS.equippedAvatar.h;
+      GS.player.vy = 0;
+      GS.player.grounded = true;
+    }
+    if (GS.player.y < 40) GS.player.y = 40;
+  },
+  _updateDifficulty(nowMs) {
+    const step = Math.floor((nowMs - GS.runStart) / 10000);
+    const vBonus = 1 + (GS.skillTree.velocityLevel * 0.10);
+    const packSpeed = AUDIO_PACKS[GS.equippedPack]?.modifiers?.speed || 1;
+    const loopScale = 1 + (GS.loopLevel * 0.1);   // +10% per boss loop cleared
+    const maxSpd = C.MAXSPD * packSpeed * loopScale;
+    GS.speed = Math.min(C.BASESPD + step * 0.85, maxSpd) * vBonus * packSpeed * loopScale;
+    if (GS.audio.active && GS.audio.bass) GS.speed = Math.min(maxSpd, GS.speed + GS.audio.bass * 2);
+    // Streak speed boost — capped so it can't exceed maxSpd
+    if (GS.streak.active) {
+      const boost = Math.min(0.25, GS.streak.count * 0.03);
+      GS.speed = Math.min(maxSpd, GS.speed * (1 + boost));
+    }
+    GS.spawnMs = Math.max(C.MINMS, (C.BASEMS - step * 55) / loopScale);
+    const packSpawn = AUDIO_PACKS[GS.equippedPack]?.modifiers?.spawnRate || 1;
+    if (packSpawn !== 1) GS.spawnMs = Math.max(C.MINMS * 0.7, GS.spawnMs / packSpawn);
+    if (GS.speed >= maxSpd - 0.05 && !GS.hitMaxSpd) {
+      GS.hitMaxSpd = true;
+      GS.mStats.maxspd++;
+      GS.domEvents.push({ type: 'comboPop', payload: { text: 'MAX SPEED!', color: 'var(--red)' } });
+    }
+  },
+  _spawnObstacle(nowMs) {
+    if (nowMs - GS.spawnTimer < GS.spawnMs) return;
+    const bassHot = GS.audio.active && GS.audio.bass > 0.8;
+    const safeGap = bassHot ? 140 : 80;
+    const dbl = !bassHot && Math.random() < 0.15 && GS.speed > 8;
+    // Occasional high obstacle (slideable) — 20% chance after speed ramps up
+    const spawnHigh = !bassHot && GS.speed > 9 && Math.random() < 0.20;
+    if (spawnHigh) {
+      // High barrier: sits low enough that standing player hits it, high enough that slide clears it.
+      // Slide player bottom = C.GY - avatarH + slideH = 310 - 56 + 24 = 278. Obs top must be > 278.
+      // y=285, h=25 → top=285 (clears slide bottom 277 with 8px gap) → bottom=310 (standing player dies)
+      GS.obstacles.push({ x: C.CW, w: 24, h: 25, y: C.GY - 25, high: true, id: GS.obstacleId++, nearMissTriggered: false });
+    } else {
+      GS.obstacles.push({ x: C.CW, w: 20, id: GS.obstacleId++, nearMissTriggered: false });
+      if (dbl) GS.obstacles.push({ x: C.CW + safeGap, w: 20, id: GS.obstacleId++, nearMissTriggered: false });
+    }
+    GS.spawnTimer = nowMs;
+  },
+  _moveObstacles(dt) {
+    const spd = GS.speed * (dt * 60);
+    for (const o of GS.obstacles) o.x -= o.fast ? spd * 1.8 : spd;
+    // Remove off-screen — keep variable-width boss obstacles working correctly
+    GS.obstacles = GS.obstacles.filter(o => o.x + (o.w || 22) > -50);
+    // Safety cap: prevents unbounded growth during boss burst spawning
+    if (GS.obstacles.length > 120) {
+      GS.obstacles.splice(0, GS.obstacles.length - 120);
+    }
+  },
+  _checkNearMisses() {
+    const px = GS.player.x, py = GS.player.y, pw = GS.equippedAvatar.w;
+    const ph = this._slideH(); // use actual hitbox height
+    for (const obs of GS.obstacles) {
+      if (obs.nearMissTriggered) continue;
+      const distX = Math.abs(px - obs.x);
+      if (distX < 50 && distX > 10) {
+        // For high obstacles, near-miss checks against the obs box directly
+        let overlapY;
+        if (obs.high) {
+          overlapY = py < obs.y + (obs.h || 30) && py + ph > obs.y;
+        } else {
+          overlapY = py < C.GY && py + ph > C.GY - 32;
+        }
+        if (overlapY && !playerCollidesWithObstacle(px, py, pw, ph, GS.obstacles)) {
+          obs.nearMissTriggered = true;
+          GS.mStats.nearmiss++;
+          // Slide-under a high obstacle = SKILL PLAY — bigger reward
+          const isSlideUnder = GS.player.sliding && obs.high;
+          const xpReward = isSlideUnder ? 8 : 5;
+          SimEco.addXP(xpReward);
+          if (obs.boss && GS.boss.active) BossSystem.damage(isSlideUnder ? 6 : 3);
+          GS.feedback.shake = 4;
+          vibrate(30);
+          const msg = isSlideUnder
+            ? '💨 SLIDE UNDER! +8 XP'
+            : '⚡ Near miss! +5 XP';
+          GS.toastQueue.push({ msg, color: isSlideUnder ? '#a855f7' : '#fbbf24', cat: 'nearmiss_' + obs.id });
+          GS.sfxQueue.push({ type: 'reward' });
+          SimStreak.trigger();
+        }
+      }
+    }
+  },
+  _emitTrail() { if (GS.equippedTrail.id === 'none') return; GS.particles.push({ x: GS.player.x + 2, y: GS.player.y + GS.equippedAvatar.h/2, vx: -(GS.speed * 0.3 + Math.random()), vy: (Math.random() - 0.5) * 0.5, life: 0.6, color: GS.equippedTrail.color + '0.7)', isTrail: true }); },
+  _updateParticles(dt) { for (const p of GS.particles) { p.x += p.vx * (dt*60); p.y += p.vy * (dt*60); p.vy += 0.08 * (dt*60); p.life -= dt * 1.5; } GS.particles = GS.particles.filter(p => p.life > 0); },
+};
+
+// SimEco (economy, scoring)
+const SimEco = {
+  update(dt) {
+    if (GS.phase === 'IDLE' && GS.passiveUnlocked && GS.runScoreBuffer === 0) {
+      let incomeMult = 1;
+      if (GS.audio.active && GS.audio.bass) incomeMult = 1 + GS.audio.bass * 0.5;
+      GS.capital += incomeSec(GS.incomeLevel) * dt * incomeMult;
+      if (GS.capital < 0) GS.capital = 0;
+    }
+    if (GS.phase === 'RUNNING') {
+      GS.flawlessMult = Math.min(2.0, GS.flawlessMult + dt * 0.05);
+      let audioFlawlessBoost = 1;
+      if (GS.audio.active && GS.audio.mid) audioFlawlessBoost = 1 + GS.audio.mid * 0.2;
+      // District multiplier
+      const d = GS.activeDistrict;
+      const districtScoreMult = d.id === 'kuro_apex' ? 3 : d.id === 'violet_heights' ? 1.2 : d.id === 'acid_market' ? 1.15 : d.id === 'chrome_bridge' ? 1.1 : 1;
+      const districtAudioMult = d.id === 'violet_heights' ? 2 : d.id === 'kuro_apex' ? 3 : 1;
+      // Skill: capitalLevel +8% per level
+      const capitalBoost = 1 + (GS.skillTree.capitalLevel * 0.08);
+      // Pack forgiveness modifier
+      const packForgive = AUDIO_PACKS[GS.equippedPack]?.modifiers?.forgiveness || 1;
+      const gain = 10 * scoreMult(GS.scoreLevel) * GS.flawlessMult * (audioFlawlessBoost * districtAudioMult) * districtScoreMult * capitalBoost * packForgive * dt;
+      GS.runScore += gain;
+      GS.totalScore += gain;
+      GS.mStats.total = GS.totalScore;
+      // Soft cap: capital gain tapers at very high run scores to prevent runaway inflation
+      // Score progression stays intact — only capital conversion is scaled
+      const inflationScale = 1 / (1 + GS.runScore / 100000);
+      if (GS.runScore > GS.bestRunScore) {
+        GS.bestRunScore = GS.runScore;
+        Persist.saveBest(GS.bestRunScore);
+        if (!GS.newBestThisRun) { GS.newBestThisRun = true; GS.domEvents.push({ type: 'hsFlash' }); }
+      }
+    }
+  },
+  addXP(amount) {
+    amount = Math.max(0, Math.floor(amount));
+    if (!amount) return;
+    const lvBefore = getLevelFromXP(GS.playerXP);
+    const rankBefore = getRankNameFromXP(GS.playerXP);
+    GS.playerXP += amount;
+    const lvAfter = getLevelFromXP(GS.playerXP);
+    if (lvAfter > lvBefore) {
+      GS.pendingRankUpName = getRankNameFromXP(GS.playerXP);
+      GS.toastQueue.push({ msg: '✨ RANK UP — ' + GS.pendingRankUpName, color: '#a78bfa', cat: 'rankup' });
+      GS.sfxQueue.push({ type: 'reward' });
+      // GOAT rank share moment
+      if (GS.pendingRankUpName.startsWith('GOAT') && !rankBefore.startsWith('GOAT')) {
+        GS.domEvents.push({ type: 'shareCard', trigger: 'goat_rank' });
+      }
+    }
+  },
+  triggerGameOver() {
+    if (GS.phase !== 'RUNNING') return;
+    GS.phase = 'GAME_OVER';
+    const finalScore   = Math.floor(GS.runScore);
+    const wasNewBest   = GS.runScore > GS.bestRunScore;
+    const wasPerfect   = GS.flawlessMult >= 1.8 && finalScore >= 500; // high mult + real score = clean run
+    GS.runScoreBuffer += GS.runScore;
+    GS.passiveUnlocked = true;
+    GS.flawlessMult    = 1.0;
+    this.addXP(Math.floor(GS.runScore * C.XP_PER_SCORE_PT) + C.XP_FLAT_PER_RUN);
+    GS.mStats.runs++;
+    if (GS.runScore > GS.mStats.bestRun) GS.mStats.bestRun = GS.runScore;
+    if (GS.speed >= C.MAXSPD - 0.05) GS.mStats.maxspd = 1;
+    GS.runScore = 0;
+    GS.sfxQueue.push({ type: 'collision' });
+    GS.domEvents.push({ type: 'shake' });
+    if (finalScore > 0) GS.domEvents.push({ type: 'submitScore', score: finalScore });
+    // Share triggers — only show one (priority: perfect > new best)
+    if (wasPerfect)      GS.domEvents.push({ type: 'shareCard', trigger: 'perfect_run' });
+    else if (wasNewBest) GS.domEvents.push({ type: 'shareCard', trigger: 'new_best' });
+    vibrate(200);
+  },
+};
+
+// SimMissions — infinite procedural system
+const SimMissions = {
+  init() {
+    const lvl = getLevelFromXP(GS.playerXP);
+    for (let s = 0; s < 3; s++) {
+      GS.activeMissionSlots[s] = generateMission(s, GS.missionSlotGen[s], lvl);
+      Object.assign(GS.missionSlotState[s], { progress: 0, ready: false, claimed: false });
+    }
+  },
+  tick() {
+    for (let s = 0; s < 3; s++) {
+      const def = GS.activeMissionSlots[s];
+      if (!def) continue;
+      const st = GS.missionSlotState[s];
+      if (st.claimed) continue;
+      st.progress = Math.min(missionProgress(def, GS.mStats), def.target);
+      st.ready = (st.progress >= def.target);
+    }
+    GS.domEvents.push({ type: 'missionsChanged' });
+  },
+  claim(slot) {
+    const def = GS.activeMissionSlots[slot];
+    if (!def) return;
+    const st = GS.missionSlotState[slot];
+    if (!st.ready || st.claimed) return;
+    const mult = RARITY_MULT[def.rarity] || 1;
+    const xp = def.xp * mult;
+    const cash = def.cash * mult;
+    SimEco.addXP(xp);
+    GS.capital = Math.max(0, GS.capital + cash);
+    GS.domEvents.push({ type: 'cashPop', payload: { amount: cash, leftPct: '45%' } });
+    GS.toastQueue.push({ msg: `🏆 ${def.label} +${xp}XP +$${cash}`, color: '#22c55e', cat: 'm_claim_' + slot });
+    st.claimed = true;
+    GS.domEvents.push({ type: 'missionsChanged' });
+    // After 700ms, advance generation counter and issue a fresh mission
+    setTimeout(() => {
+      GS.missionSlotGen[slot]++;
+      const lvl = getLevelFromXP(GS.playerXP);
+      GS.activeMissionSlots[slot] = generateMission(slot, GS.missionSlotGen[slot], lvl);
+      Object.assign(GS.missionSlotState[slot], { progress: 0, ready: false, claimed: false });
+      SimMissions.tick();
+    }, 700);
+  },
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 6b2 — IDLE HUM (choral/monastic ambient — plays until GameMusic)
+════════════════════════════════════════════════════════════════════ */
+const IdleHum = (() => {
+  let _ctx = null, _master = null, _running = false, _voices = [];
+
+  // A pentatonic sequence — spiritual, floating, non-threatening
+  // Notes: D3, F3, G3, A3, C4, D4 (D minor pentatonic — cathedral-like)
+  const NOTE_FREQS = [146.83, 174.61, 196.00, 220.00, 261.63, 293.66];
+  const MELODY = [0, 2, 3, 4, 2, 1, 3, 4, 2, 0, 1, 3]; // index into NOTE_FREQS
+
+  function _voice(freq, gainVal, type = 'sine', detune = 0) {
+    const osc  = _ctx.createOscillator();
+    const gain = _ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    osc.detune.value = detune;
+    gain.gain.value = gainVal;
+    osc.connect(gain);
+    gain.connect(_master);
+    osc.start();
+    _voices.push(osc);
+    return { osc, gain };
+  }
+
+  function start() {
+    if (_running) return;
+    try {
+      _ctx   = new (window.AudioContext || window.webkitAudioContext)();
+      _master = _ctx.createGain();
+      // Reverb-like effect: two delay nodes for depth
+      const delay1 = _ctx.createDelay(0.6);
+      const delay2 = _ctx.createDelay(0.9);
+      const fb1 = _ctx.createGain(); fb1.gain.value = 0.3;
+      const fb2 = _ctx.createGain(); fb2.gain.value = 0.2;
+      delay1.delayTime.value = 0.35;
+      delay2.delayTime.value = 0.55;
+      delay1.connect(fb1); fb1.connect(delay1); delay1.connect(_ctx.destination);
+      delay2.connect(fb2); fb2.connect(delay2); delay2.connect(_ctx.destination);
+      _master.connect(delay1);
+      _master.connect(delay2);
+      _master.connect(_ctx.destination);
+
+      // Fade master in gently
+      _master.gain.setValueAtTime(0, _ctx.currentTime);
+      _master.gain.linearRampToValueAtTime(0.08, _ctx.currentTime + 3);
+
+      // Choir-like pad: stacked soft sine voices (simulates SSAA choir vowel)
+      _voice(NOTE_FREQS[0], 0.5, 'sine');         // bass root
+      _voice(NOTE_FREQS[0] * 2, 0.25, 'sine', 8); // octave, slight detune
+      _voice(NOTE_FREQS[2], 0.2, 'sine', -5);      // 5th
+      _voice(NOTE_FREQS[3], 0.15, 'sine', 3);      // major 6th warmth
+      _voice(NOTE_FREQS[4], 0.1, 'triangle', 0);   // high colour note
+
+      // Melody note sequencer — cycles through pentatonic steps slowly
+      let step = 0;
+      const tick = () => {
+        if (!_running) return;
+        const freq = NOTE_FREQS[MELODY[step % MELODY.length]];
+        const mel = _ctx.createOscillator();
+        const mGain = _ctx.createGain();
+        mel.type = 'sine';
+        mel.frequency.value = freq * 2; // melody one octave up
+        mGain.gain.setValueAtTime(0, _ctx.currentTime);
+        mGain.gain.linearRampToValueAtTime(0.07, _ctx.currentTime + 0.4);
+        mGain.gain.linearRampToValueAtTime(0, _ctx.currentTime + 2.8);
+        mel.connect(mGain);
+        mGain.connect(_master);
+        mel.start(_ctx.currentTime);
+        mel.stop(_ctx.currentTime + 3);
+        step++;
+        setTimeout(tick, 2200 + Math.random() * 800); // slightly irregular = breathing feel
+      };
+      setTimeout(tick, 1500); // first note after pad establishes
+
+      _running = true;
+    } catch {}
+  }
+
+  function stop() {
+    if (!_running) return;
+    _running = false;
+    try {
+      const now = _ctx.currentTime;
+      _master.gain.linearRampToValueAtTime(0, now + 1.2);
+      setTimeout(() => {
+        _voices.forEach(o => { try { o.stop(); } catch {} });
+        _voices = [];
+        try { _ctx.close(); } catch {}
+        _ctx = null; _master = null;
+      }, 1300);
+    } catch {}
+  }
+
+  return { start, stop };
+})();
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 6c — PREVIEW AUDIO (SYNTHETIC TONES — NO ASSETS REQUIRED)
+════════════════════════════════════════════════════════════════════ */
+const PreviewAudio = (() => {
+  let _ctx = null;
+  let _nodes = [];
+  let _htmlAudio = null;   // HTMLAudioElement for real file previews
+  let _htmlTimer = null;   // timeout handle for auto-stop
+
+  // Each pack gets a distinct synthetic chord character
+  const PACK_TONES = {
+    kuro_vol1:     { freqs: [220, 330, 440],      type: 'sine',     color: 'cool' },
+    midnight_tokyo:{ freqs: [185, 277, 370, 493], type: 'triangle', color: 'pink' },
+    underground_sa:{ freqs: [165, 220, 330, 415], type: 'sine',     color: 'warm' },
+  };
+
+  function _getCtx() {
+    if (!_ctx) _ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (_ctx.state === 'suspended') _ctx.resume();
+    return _ctx;
+  }
+
+  // Stop everything — both real and synthetic
+  function stop() {
+    // Stop HTMLAudio
+    if (_htmlTimer) { clearTimeout(_htmlTimer); _htmlTimer = null; }
+    if (_htmlAudio) {
+      try { _htmlAudio.pause(); _htmlAudio.src = ''; } catch {}
+      _htmlAudio = null;
+    }
+    // Stop WebAudio nodes
+    _nodes.forEach(n => { try { n.disconnect(); } catch {} });
+    _nodes = [];
+  }
+
+  // Synthetic fallback — WebAudio oscillator chord
+  function playSynthetic(packId) {
+    stop();
+    try {
+      const actx  = _getCtx();
+      const now   = actx.currentTime;
+      const tones = PACK_TONES[packId] || PACK_TONES.kuro_vol1;
+      const master = actx.createGain();
+      master.gain.setValueAtTime(0, now);
+      master.gain.linearRampToValueAtTime(0.12, now + 0.15);
+      master.gain.setValueAtTime(0.12, now + 2.5);
+      master.gain.linearRampToValueAtTime(0, now + 3.0);
+      master.connect(actx.destination);
+      tones.freqs.forEach((freq, i) => {
+        const osc  = actx.createOscillator();
+        const g    = actx.createGain();
+        const lfo  = actx.createOscillator();
+        const lfog = actx.createGain();
+        osc.type = tones.type;
+        osc.frequency.value = freq;
+        lfo.frequency.value = 5 + i;
+        lfog.gain.value = 2;
+        lfo.connect(lfog);
+        lfog.connect(osc.frequency);
+        lfo.start(now);
+        lfo.stop(now + 3.0);
+        g.gain.value = 1 / tones.freqs.length;
+        osc.connect(g);
+        g.connect(master);
+        osc.start(now + i * 0.05);
+        osc.stop(now + 3.0);
+        _nodes.push(osc, g, lfo, lfog);
+      });
+      _nodes.push(master);
+    } catch {}
+  }
+
+  // Real audio first, synthetic fallback on any failure
+  function play(url, packId) {
+    stop();
+    if (url) {
+      try {
+        _htmlAudio = new Audio(url);
+        _htmlAudio.volume = 0.65;
+        _htmlAudio
+          .play()
+          .then(() => {
+            // Auto-stop at 10s
+            _htmlTimer = setTimeout(stop, 10000);
+          })
+          .catch(() => {
+            // File missing, blocked, or no user gesture — fall back to synthetic
+            _htmlAudio = null;
+            playSynthetic(packId);
+          });
+        return;
+      } catch {
+        _htmlAudio = null;
+      }
+    }
+    // No URL provided — go straight to synthetic
+    playSynthetic(packId);
+  }
+
+  return { play, stop, playSynthetic };
+})();
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 6d — GAME MUSIC (looping background track per pack)
+════════════════════════════════════════════════════════════════════ */
+const GameMusic = (() => {
+  let _audio = null;
+  let _currentUrl = null;
+  let _currentPack = null;
+  const _cache = {};   // url → blob URL — pre-fetched on equip
+
+  // Pre-fetch a track into the cache (call on pack equip, not on play)
+  // This separates the slow network request from the gesture-gated play()
+  function prefetch(url) {
+    if (!url || _cache[url]) return; // already cached
+    fetch(url)
+      .then(r => r.ok ? r.blob() : Promise.reject(r.status))
+      .then(blob => { _cache[url] = URL.createObjectURL(blob); })
+      .catch(() => { _cache[url] = null; }); // null = fetch failed, use direct
+  }
+
+  function play(url) {
+    if (!url) return;
+    // If same URL and audio exists and is either playing OR just started loading (currentTime===0),
+    // don't interrupt it — it may still be buffering from the gesture-context call
+    if (_currentUrl === url && _audio && (!_audio.paused || _audio.currentTime === 0)) return;
+    stop();
+    _currentUrl = url;
+
+    // Use cached blob URL if available (synchronous — safe in gesture context)
+    // Otherwise fall back to direct src (works on Render with correct MIME)
+    const src = (_cache[url] != null) ? _cache[url] : url;
+    try {
+      _audio = new Audio(src);
+      _audio.volume = 0.55;
+      _audio.loop   = true;
+      _audio.play().catch(() => {
+        // If blob src failed, try direct URL as last resort
+        if (src !== url) {
+          try {
+            _audio = new Audio(url);
+            _audio.volume = 0.55;
+            _audio.loop   = true;
+            _audio.play().catch(() => {});
+          } catch {}
+        }
+      });
+    } catch {}
+  }
+
+  function playPack(packId) {
+    const pack = AUDIO_PACKS[packId];
+    if (!pack || !pack.track) return;
+    _currentPack = packId;
+    play(pack.track);
+  }
+
+  function stop() {
+    if (_audio) {
+      try { _audio.pause(); _audio.src = ''; _audio.onended = null; } catch {}
+      _audio = null;
+    }
+    _currentUrl = null;
+  }
+
+  function setVolume(v) {
+    if (_audio) _audio.volume = Math.max(0, Math.min(1, v));
+  }
+
+  return { play, playPack, stop, setVolume, prefetch };
+})();
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 6b — BOSS SYSTEM ("THE SIGNAL") WITH CINEMATIC UPGRADES
+════════════════════════════════════════════════════════════════════ */
+
+// ── Haptic feedback (no-op on unsupported devices) ──
+// ── Toast helper — single pipeline for all toast calls ──
+function pushToast(msg, color, cat) {
+  GS.toastQueue.push({ msg, color: color || '#38bdf8', cat: cat || 'toast_' + GS.frame });
+}
+
+// ── Preview state reset — call before any pack state change ──
+function resetPreview() {
+  clearTimeout(GS.preview.timeout);
+  GS.preview.active = false;
+  GS.preview.packId = null;
+  GS.preview.timeout = 0;
+  try { PreviewAudio.stop(); } catch {}
+}
+
+function vibrate(pattern) {
+  try { if (navigator.vibrate) navigator.vibrate(pattern); } catch {}
+}
+
+// ── Audio mode switcher (affects fallback rhythm character) ──
+function toggleAudioMode() {
+  GS.audioMode = (GS.audioMode + 1) % 3;
+  const names = ['AMAPIANO', 'INDUSTRIAL', 'SILENT'];
+  pushToast(`RHYTHM: ${names[GS.audioMode]}`, '#38bdf8', 'audiomode');
+}
+
+const BossSystem = {
+  start() {
+    GS.boss.active   = true;
+    GS.boss.intro    = true;
+    GS.boss.introTimer = 0;
+    GS.boss.phase    = 0;
+    GS.boss.hp       = GS.boss.maxHp;
+    GS.boss.timer    = 0;
+    GS.boss.pulse    = 0;
+    GS.boss.targetY  = GS.player.y;
+    GS.boss.attackCooldown = 0;
+    GS.boss.preSpeed = GS.speed;
+    GS.speed        *= 0.6; // cinematic slowdown
+    GS.obstacles     = GS.obstacles.filter(o => !o.boss); // clear old boss obs
+    triggerWarp();
+    vibrate([100, 50, 100]);
+    GS.toastQueue.push({ msg: '⚡ THE SIGNAL DETECTED', color: '#a855f7', cat: 'boss_start' });
+  },
+
+  update(dt) {
+    if (!GS.boss.active) return;
+    GS.boss.timer         += dt;
+    GS.boss.attackCooldown -= dt;
+
+    // ── Player position tracking (adaptive AI) — skip during intro ──
+    if (!GS.boss.intro) {
+      GS.boss.targetY += (GS.player.y - GS.boss.targetY) * 0.08;
+    }
+
+    // ── Cinematic intro (2.5s) ──
+    if (GS.boss.intro) {
+      GS.boss.introTimer += dt;
+      if (GS.boss.introTimer >= 2.5) {
+        GS.boss.intro = false;
+        GS.boss.phase = 1;
+        GS.speed      = GS.boss.preSpeed; // restore exactly
+        triggerWarp();
+        GS.toastQueue.push({ msg: '💀 PHASE 1 — PULSE', color: '#a855f7', cat: 'boss_p1' });
+      }
+      return; // no attacks during intro
+    }
+
+    // ── Phase dispatch ──
+    switch (GS.boss.phase) {
+      case 1: this.phasePulse(dt);    break;
+      case 2: this.phaseChaos(dt);    break;
+      case 3: this.phaseOverload(dt); break;
+    }
+
+    // ── Beam state machine: warning → active (pure simulation, no DOM) ──
+    for (const obs of GS.obstacles) {
+      if (obs.type === 'beam-warning') {
+        obs.beamTimer = (obs.beamTimer || 0) + dt;
+        if (obs.beamTimer > 1.0) obs.type = 'beam-active';
+      }
+    }
+
+    this.checkPhaseTransition();
+  },
+
+  damage(amount) {
+    if (!GS.boss.active || GS.boss.intro) return;
+    GS.boss.hp = Math.max(0, GS.boss.hp - amount);
+    // Impact feedback: screen shake and flash
+    GS.feedback.shake = 8;
+    GS.feedback.flash = 1;
+    GS.toastQueue.push({ msg: '🔥 HIT!', color: '#ec4899', cat: 'boss_damage' });
+  },
+
+  checkPhaseTransition() {
+    if (GS.boss.phase === 1 && GS.boss.hp < GS.boss.maxHp * 0.66) {
+      GS.boss.phase = 2;
+      triggerWarp();
+      vibrate([100, 50, 100]);
+      GS.feedback.shake = 10;
+      GS.feedback.flash = 1;
+      GS.toastQueue.push({ msg: '🔴 PHASE 2 — CHAOS', color: '#ec4899', cat: 'boss_p2' });
+    }
+    if (GS.boss.phase === 2 && GS.boss.hp < GS.boss.maxHp * 0.33) {
+      GS.boss.phase = 3;
+      triggerWarp();
+      vibrate([100, 50, 100]);
+      GS.feedback.shake = 10;
+      GS.feedback.flash = 1;
+      GS.toastQueue.push({ msg: '☠ PHASE 3 — OVERLOAD', color: '#ef4444', cat: 'boss_p3' });
+    }
+    if (GS.boss.hp <= 0) this.end();
+  },
+
+  end() {
+    GS.boss.active   = false;
+    GS.boss.defeated = true;
+    GS.speed         = GS.boss.preSpeed; // exact restore — loopScale applied next tick
+    GS.loopLevel++;
+    GS.capital      += 2000;
+    GS.obstacles     = GS.obstacles.filter(o => !o.boss);
+    triggerWarp();
+    vibrate([200, 100, 200, 100, 400]);
+    GS.toastQueue.push({ msg: `⚡ THE SIGNAL DEFEATED — LOOP ${GS.loopLevel}`, color: '#fbbf24', cat: 'boss_end' });
+    GS.sfxQueue.push({ type: 'reward' });
+    SimEco.addXP(500);
+    GS.domEvents.push({ type: 'victory' });
+  },
+
+  // ── Phase 1: Glitch Wave (bass-synced) + Data Beam (telegraph→execute) ──
+  phasePulse(dt) {
+    GS.boss.pulse += dt;
+    const beat = GS.audio.bass > 0.6;
+    if (beat && GS.boss.attackCooldown <= 0) {
+      this._spawnGlitchWave();
+      GS.boss.attackCooldown = 0.5;
+    }
+    // Data Beam fires on a separate rhythm every ~2s regardless of bass
+    if (GS.boss.attackCooldown <= 0 && GS.boss.pulse > 2) {
+      this._spawnDataBeam();
+      GS.boss.attackCooldown = 1.2;
+      GS.boss.pulse = 0;
+    }
+  },
+
+  // ── Phase 2: Ghost Lane (deception) + Inversion Wall (pattern trap) ──
+  phaseChaos(dt) {
+    if (GS.boss.attackCooldown <= 0) {
+      if (Math.random() < 0.5) this._spawnGhostLane();
+      else this._spawnInversionWall();
+      GS.boss.attackCooldown = 0.7;
+    }
+  },
+
+  // ── Phase 3: Cross Laser + Pulse Ring — maximum pressure ──
+  phaseOverload(dt) {
+    GS.speed = Math.min(C.MAXSPD * 1.5, GS.speed + 6 * dt);
+    if (GS.boss.attackCooldown <= 0) {
+      if (Math.random() < 0.6) this._spawnCrossLaser();
+      else this._spawnPulseRing();
+      GS.boss.attackCooldown = 0.22;
+    }
+  },
+
+  // ── Spawn helpers ──
+  _spawnGlitchWave() {
+    // Glitch wave: high:true obstacles the player must slide under.
+    // Slide player bottom = ~277. Obs top must be > 277 to be clearable by slide.
+    // y=285 gives 8px clearance. y alternates 285/288 for visual variety.
+    for (let i = 0; i < 5; i++) {
+      GS.obstacles.push({
+        x: C.CW + i * 60, y: 285 + (i % 2) * 3,
+        w: 28, h: 25,
+        boss: true, type: 'glitch', high: true,
+        nearMissTriggered: false, id: GS.obstacleId++,
+      });
+    }
+  },
+
+  _spawnDataBeam() {
+    // y clamped above ground — 250–295
+    const y = 250 + Math.random() * (Math.min(295, C.GY - 15) - 250);
+    GS.obstacles.push({
+      x: C.CW, y,
+      w: 120, h: 8,
+      boss: true, type: 'beam-warning',
+      beamTimer: 0,   // counts up; transitions to beam-active at 1s
+      nearMissTriggered: false, id: GS.obstacleId++,
+    });
+  },
+
+  _spawnGhostLane() {
+    // Spawn relative to tracked player Y — adaptive pressure
+    const baseY = Math.max(160, Math.min(260, GS.boss.targetY - 40));
+    for (let i = 0; i < 5; i++) {
+      const fake = Math.random() > 0.45;
+      GS.obstacles.push({
+        x: C.CW + i * 55, y: baseY + (i - 2) * 40,
+        w: 30, h: 28,
+        boss: true, fake, flicker: true, type: 'ghost',
+        nearMissTriggered: false, id: GS.obstacleId++,
+      });
+    }
+  },
+
+  _spawnInversionWall() {
+    const gapIndex = Math.floor(Math.random() * 4); // random safe slot
+    for (let i = 0; i < 4; i++) {
+      GS.obstacles.push({
+        x: C.CW, y: 200 + i * 50,
+        w: 40, h: 30,
+        boss: true, inverted: (i === gapIndex), type: 'inversion',
+        nearMissTriggered: false, id: GS.obstacleId++,
+      });
+    }
+  },
+
+  _spawnBeatWall() {
+    const gapY = 200 + Math.sin(GS.boss.timer * 2) * 60;
+    for (let i = 0; i < 4; i++) {
+      if (i === 2) continue;
+      GS.obstacles.push({
+        x: C.CW + i * 8, y: gapY + i * 38,
+        w: 40, h: 28,
+        boss: true, type: 'beat',
+        nearMissTriggered: false, id: GS.obstacleId++,
+      });
+    }
+  },
+
+  _spawnLaserBurst() {
+    const lanes = [195, 255, Math.min(290, C.GY - 20)];
+    for (const y of lanes) {
+      GS.obstacles.push({
+        x: C.CW, y,
+        w: 55, h: 10,
+        boss: true, fast: true, type: 'laser',
+        nearMissTriggered: false, id: GS.obstacleId++,
+      });
+    }
+  },
+  _spawnCrossLaser() {
+    // Three thick beams — y clamped above ground
+    const lanes = [200, 248, Math.min(C.GY - 22, 296)];
+    lanes.forEach(y => {
+      GS.obstacles.push({
+        x: C.CW, y,
+        w: 80, h: 12,
+        boss: true, fast: true, type: 'laser',
+        nearMissTriggered: false, id: GS.obstacleId++,
+      });
+    });
+  },
+  _spawnPulseRing() {
+    // Six nodes fanning in a wave — y = 200 ± 80
+    for (let i = 0; i < 6; i++) {
+      const y = Math.min(C.GY - 18, Math.max(120, 200 + Math.sin(i) * 80));
+      GS.obstacles.push({
+        x: C.CW + i * 28, y,
+        w: 20, h: 20,
+        boss: true, type: 'beat',   // reuse beat renderer (purple pulse)
+        nearMissTriggered: false, id: GS.obstacleId++,
+      });
+    }
+  },
+};
+
+const SimAudio = (function() {
+  let audioCtx = null;
+  let analyser = null;
+  let dataArray = null;
+  let source = null;
+  let mediaStream = null;
+  let isInitialized = false;
+  let useFallback = false;
+  let fallbackPhase = 0;
+
+  async function init() {
+    if (isInitialized) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStream = stream;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+      isInitialized = true;
+      useFallback = false;
+      GS.audio.active = true;
+      GS.audio.micActive = true;
+    } catch (err) {
+      useFallback = true;
+      isInitialized = true;
+      GS.audio.active = true;
+      GS.audio.micActive = false;
+    }
+  }
+
+  function stop() {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(track => track.stop());
+      mediaStream = null;
+    }
+    if (audioCtx) {
+      audioCtx.close().catch(() => {});
+      audioCtx = null;
+    }
+    analyser = null;
+    dataArray = null;
+    source = null;
+    isInitialized = false;
+    useFallback = false;
+    fallbackPhase = 0;
+    GS.audio.active = false;
+    GS.audio.micActive = false;
+    GS.audio.bass = 0;
+    GS.audio.mid = 0;
+    GS.audio.treble = 0;
+    GS.audio.amplitude = 0;
+  }
+
+  async function toggle() {
+    if (isInitialized) {
+      stop();
+    } else {
+      await init();
+    }
+  }
+
+  function update() {
+    if (!isInitialized) return;
+    if (useFallback) {
+      // audioMode changes the rhythm character of the simulated beat
+      // 0=AMAPIANO (smooth sine), 1=INDUSTRIAL (sharp saw), 2=SILENT (flat zero)
+      if (GS.audioMode === 2) {
+        GS.audio.bass = 0; GS.audio.mid = 0; GS.audio.treble = 0; GS.audio.amplitude = 0;
+        return;
+      }
+      const speed = GS.audioMode === 1 ? 0.09 : 0.05; // industrial = faster
+      fallbackPhase += speed;
+      let fake;
+      if (GS.audioMode === 1) {
+        // Industrial: sawtooth-ish — sharp attack, hard decay
+        fake = (fallbackPhase % (Math.PI * 2)) / (Math.PI * 2);
+      } else {
+        // Amapiano: smooth sine
+        fake = (Math.sin(fallbackPhase) + 1) / 2;
+      }
+      GS.audio.bass      = Math.max(0, fake - 0.2) * 1.25;
+      GS.audio.mid       = fake * 0.8;
+      GS.audio.treble    = (Math.sin(fallbackPhase * 2) + 1) / 4;
+      GS.audio.amplitude = (GS.audio.bass + GS.audio.mid + GS.audio.treble) / 3;
+      return;
+    }
+    if (!analyser || !dataArray) return;
+    analyser.getByteFrequencyData(dataArray);
+    const len = dataArray.length;
+    const bassEnd = Math.floor(len * 0.15);
+    const midEnd = Math.floor(len * 0.6);
+    let bassSum = 0, midSum = 0, trebleSum = 0;
+    for (let i = 0; i < len; i++) {
+      if (i < bassEnd) bassSum += dataArray[i];
+      else if (i < midEnd) midSum += dataArray[i];
+      else trebleSum += dataArray[i];
+    }
+    GS.audio.bass = bassSum / (bassEnd * 255);
+    GS.audio.mid = midSum / ((midEnd - bassEnd) * 255);
+    GS.audio.treble = trebleSum / ((len - midEnd) * 255);
+    GS.audio.amplitude = (GS.audio.bass + GS.audio.mid + GS.audio.treble) / 3;
+  }
+
+  // Returns raw frequency bands as primitives — NO WebAudio objects leave this closure
+  function getFrequencyData() {
+    if (!isInitialized) return { bass: 0, mid: 0, treble: 0, amplitude: 0 };
+    if (useFallback) {
+      const fake = (Math.sin(fallbackPhase) + 1) / 2;
+      return {
+        bass: Math.max(0, fake - 0.2) * 1.25,
+        mid: fake * 0.8,
+        treble: (Math.sin(fallbackPhase * 2) + 1) / 4,
+        amplitude: fake * 0.7,
+      };
+    }
+    if (!analyser || !dataArray) return { bass: 0, mid: 0, treble: 0, amplitude: 0 };
+    analyser.getByteFrequencyData(dataArray);
+    const len = dataArray.length;
+    const bassEnd = Math.floor(len * 0.15);
+    const midEnd = Math.floor(len * 0.6);
+    let bassSum = 0, midSum = 0, trebleSum = 0;
+    for (let i = 0; i < len; i++) {
+      if (i < bassEnd) bassSum += dataArray[i];
+      else if (i < midEnd) midSum += dataArray[i];
+      else trebleSum += dataArray[i];
+    }
+    const bass = bassSum / (bassEnd * 255);
+    const mid = midSum / ((midEnd - bassEnd) * 255);
+    const treble = trebleSum / ((len - midEnd) * 255);
+    return { bass, mid, treble, amplitude: (bass + mid + treble) / 3 };
+  }
+
+  return { init, stop, toggle, update, getFrequencyData, isInitialized: () => isInitialized };
+})();
+
+let _audioUpdateFrame = 0;
+function updateAudioHook() {
+  _audioUpdateFrame++;
+  if (_audioUpdateFrame % 2 !== 0) return;
+  if (!GS.audio.active) { SimAudio.update(); return; } // update fallback phase
+  const data = SimAudio.getFrequencyData();
+  // Apply skill modifiers — GS.audio receives only 0.0-1.0 primitives
+  const flowBoost  = 1 + (GS.skillTree.flowLevel  * 0.15); // +15% bass sensitivity per level
+  const syncBoost  = 1 + (GS.skillTree.syncLevel  * 0.05); // +5% amplitude boost per level
+  GS.audio.bass      = Math.min(1, data.bass      * flowBoost);
+  GS.audio.mid       = Math.min(1, data.mid);
+  GS.audio.treble    = Math.min(1, data.treble);
+  GS.audio.amplitude = Math.min(1, data.amplitude * syncBoost);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 7b — STREAK SYSTEM
+════════════════════════════════════════════════════════════════════ */
+const SimStreak = {
+  update(dt) {
+    if (!GS.streak.active) return;
+    GS.streak.timer -= dt;
+    if (GS.streak.timer <= 0) {
+      GS.streak.active = false;
+      GS.streak.count  = 0;
+    }
+  },
+  trigger() {
+    GS.streak.count++;
+    GS.streak.active = true;
+    GS.streak.timer  = 2.5;
+    GS.domEvents.push({ type: 'streakPulse', value: GS.streak.count });
+  },
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 8 — SIMULATION TICK (strict order)
+════════════════════════════════════════════════════════════════════ */
+function Simulation_tick(dt, nowMs) {
+  SimInput.tick();               // input → state changes
+  SimCore.update(dt, nowMs);     // physics, obstacles, boss trigger
+  SimEco.update(dt);             // economy, scoring
+  SimMissions.tick();            // mission progress
+  BossSystem.update(dt);         // boss phases + attacks
+  SimStreak.update(dt);          // streak timer decay
+  updateAudioHook();             // audio → GS.audio
+  INPUT_flush();                 // clear consumed inputs
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 8b — DISTRICT WARP FX
+════════════════════════════════════════════════════════════════════ */
+function triggerWarp() {
+  canvas.classList.add('warp-active');
+  setTimeout(() => canvas.classList.remove('warp-active'), 820);
+  vibrate([50, 30, 50]);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 9 — RENDERER (canvas drawing) WITH SHAKE, FLASH, CINEMATIC BOSS INTRO
+════════════════════════════════════════════════════════════════════ */
+const canvas = document.getElementById('gc');
+const ctx = canvas.getContext('2d');
+
+function drawProceduralHands(ctx, px, py, avatarW, avatarH, grounded, audioEnergy, frame, speed) {
+  const isRunning = (GS.phase === 'RUNNING' && speed > 0.5);
+  const isJumping = (GS.phase === 'RUNNING' && !grounded);
+  const breath = isRunning ? 0 : Math.sin(frame * 0.05) * 2.5;
+  const swingIntensity = isRunning && grounded ? Math.min(25, speed * 1.5) : 0;
+  const swing = isRunning && grounded ? Math.sin(frame * 0.2) * swingIntensity : 0;
+  const shoulderY = py + 18 + breath;
+  const handColor = GS.equippedSkin.body;
+  ctx.save();
+  ctx.strokeStyle = handColor;
+  ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round';
+  ctx.shadowBlur = 10 * audioEnergy;
+  ctx.shadowColor = handColor;
+  if (isJumping) {
+    ctx.beginPath();
+    ctx.moveTo(px, shoulderY);
+    ctx.lineTo(px - 14, shoulderY - 14);
+    ctx.lineTo(px - 18, shoulderY - 22);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(px + avatarW, shoulderY);
+    ctx.lineTo(px + avatarW + 14, shoulderY - 14);
+    ctx.lineTo(px + avatarW + 18, shoulderY - 22);
+    ctx.stroke();
+  } else if (isRunning) {
+    ctx.beginPath();
+    ctx.moveTo(px, shoulderY);
+    const lElbowX = px - 12;
+    const lElbowY = shoulderY + 10 + swing;
+    ctx.lineTo(lElbowX, lElbowY);
+    ctx.lineTo(lElbowX - 4, lElbowY + 8);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(px + avatarW, shoulderY);
+    const rElbowX = px + avatarW + 12;
+    const rElbowY = shoulderY + 10 - swing;
+    ctx.lineTo(rElbowX, rElbowY);
+    ctx.lineTo(rElbowX + 4, rElbowY + 8);
+    ctx.stroke();
+  } else {
+    const idleSway = Math.sin(frame * 0.04) * 3;
+    ctx.beginPath();
+    ctx.moveTo(px, shoulderY);
+    ctx.lineTo(px - 5, shoulderY + 10 + idleSway);
+    ctx.lineTo(px - 7, shoulderY + 18 + idleSway);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(px + avatarW, shoulderY);
+    ctx.lineTo(px + avatarW + 5, shoulderY + 10 - idleSway);
+    ctx.lineTo(px + avatarW + 7, shoulderY + 18 - idleSway);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function applyAudioFX(ctx) {
+  const p = GS.player;
+  const audio = GS.audio;
+  const amp = audio.amplitude || 0;
+  const W = ctx.canvas.width;
+  const H = ctx.canvas.height;
+
+  ctx.save();
+
+  if (amp > 0.1) {
+    ctx.fillStyle = `rgba(56, 189, 248, ${amp * 0.08})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  const centerX = p.x + p.w / 2;
+  const centerY = p.y + p.h / 2;
+  const glowRadius = 60 * amp + 20;
+  const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, glowRadius);
+  gradient.addColorStop(0, `rgba(56, 189, 248, ${amp * 0.4})`);
+  gradient.addColorStop(1, 'transparent');
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, glowRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (audio.bass > 0.3) {
+    const sparkCount = Math.min(10, Math.floor(audio.bass * 8));
+    ctx.fillStyle = `rgba(251, 191, 36, ${audio.bass})`;
+    for (let i = 0; i < sparkCount; i++) {
+      const offsetX = (Math.random() - 0.5) * 50;
+      const offsetY = (Math.random() - 0.5) * 80;
+      const size = Math.random() * 2 * audio.bass;
+      ctx.beginPath();
+      ctx.arc(centerX + offsetX, centerY + offsetY, size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  if (GS.frame % 2 === 0) {
+    const root = document.documentElement;
+    root.style.setProperty('--ui-bright', `${100 + (audio.mid * 50)}%`);
+    root.style.setProperty('--ui-glow', `${audio.mid * 15}px`);
+    // Signal Scramble: subtle UI jitter during Phase 2
+    if (GS.boss.active && GS.boss.phase === 2) {
+      const jitter = Math.sin(GS.boss.timer * 10) * 2.5;
+      root.style.setProperty('--glitch-offset', `${jitter}px`);
+    } else {
+      root.style.setProperty('--glitch-offset', '0px');
+    }
+  }
+  // Pack visual palette — only fires on equip change, not every frame
+  if (GS.equippedPack !== GS._lastEquippedPack) {
+    GS._lastEquippedPack = GS.equippedPack;
+    const packVisuals = AUDIO_PACKS[GS.equippedPack]?.visuals;
+    if (packVisuals) {
+      const root = document.documentElement;
+      root.style.setProperty('--blue', packVisuals.primary);
+      root.style.setProperty('--purple', packVisuals.secondary);
+    }
+  }
+
+  ctx.restore();
+}
+
+const Renderer = {
+  frame: 0,
+  draw() {
+    this.frame++;
+    GS.frame = this.frame;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // reset accumulated shake/translate drift
+    ctx.clearRect(0, 0, C.CW, C.CH);
+    
+    // --- SCREEN SHAKE (applied at very top) ---
+    if (GS.feedback.shake > 0) {
+      const s = GS.feedback.shake;
+      ctx.translate((Math.random() - 0.5) * s, (Math.random() - 0.5) * s);
+      GS.feedback.shake *= 0.85;
+    }
+
+    this._drawSky();
+    this._drawStars();
+    this._drawCitySilhouette();
+    this._drawGroundLines();
+    this._drawGround();
+    this._drawParticles();
+    this._drawObstacles();
+    this._drawPlayerShadow();
+    this._drawAudioGlow();
+    this._drawRankAura();
+    this._drawPlayer();
+    this._drawHeadphones();
+    this._drawBackpack();
+    this._drawSneakers();
+    this._drawShades();
+    this._drawChain();
+    if (GS.boss.active) this._drawBoss();
+    if (GS.boss.active && GS.boss.intro) this._drawBossIntro();
+    if (GS.boss.defeated && GS.phase === 'RUNNING') this._drawVictory();
+    this._drawCanvasHUD();
+    this._drawRankUpFlash();
+    this._drawStateOverlay();
+    this._drawAudioSparkles();
+    applyAudioFX(ctx);
+    
+    // Boss presence FX: pulsating overlay
+    if (GS.boss.active) {
+      ctx.save();
+      ctx.fillStyle = `rgba(168,85,247,${GS.audio.amplitude * 0.05})`;
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.restore();
+    }
+    
+    // --- SCREEN FLASH (hit feedback) ---
+    if (GS.feedback.flash > 0) {
+      ctx.save();
+      ctx.fillStyle = `rgba(255,255,255,${GS.feedback.flash * 0.3})`;
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.restore();
+      GS.feedback.flash *= 0.8;
+    }
+  },
+  _drawSky() { const d=GS.activeDistrict; const g = ctx.createLinearGradient(0,0,0,C.CH); g.addColorStop(0,d.skyTop); g.addColorStop(1,d.skyBot); ctx.fillStyle = g; ctx.fillRect(0,0,C.CW,C.CH); },
+  _drawStars() { ctx.fillStyle='rgba(255,255,255,0.4)'; for(let i=0;i<40;i++) ctx.fillRect((i*97+13)%C.CW,(i*43+7)%(C.GY-40),1,1); },
+  _drawCitySilhouette() { const bh=[55,90,70,110,65,80,45,95,75,60,100,50,85,70,115,55]; const d=GS.activeDistrict; let bx=0; for(let i=0;i<bh.length;i++){ const bw=48+i*2; ctx.fillStyle='#0a1828'; ctx.fillRect(bx,C.GY-bh[i],bw,bh[i]); ctx.fillStyle=`${d.color}12`; for(let wy=C.GY-bh[i]+8; wy<C.GY-10; wy+=12) for(let wx=bx+4; wx<bx+bw-4; wx+=10) if(Math.sin(wx+wy)>0.3) ctx.fillRect(wx,wy,5,4); bx+=bw+2; } },
+  _drawGroundLines() { const d=GS.activeDistrict; ctx.strokeStyle=`${d.color}15`; ctx.lineWidth=1; ctx.setLineDash([25,25]); ctx.lineDashOffset=-GS.groundOffset; ctx.beginPath(); ctx.moveTo(0,C.GY+18); ctx.lineTo(C.CW,C.GY+18); ctx.stroke(); ctx.setLineDash([]); },
+  _drawGround() { const d=GS.activeDistrict; ctx.fillStyle='#121f30'; ctx.fillRect(0,C.GY,C.CW,C.CH-C.GY); const gg=ctx.createLinearGradient(0,C.GY-3,0,C.GY+2); gg.addColorStop(0,d.groundLine); gg.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=gg; ctx.fillRect(0,C.GY-3,C.CW,3); },
+  _drawParticles() { for(const p of GS.particles){ ctx.globalAlpha=p.life*(p.isTrail?0.7:1); ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,p.isTrail?4:3,p.isTrail?4:3); } ctx.globalAlpha=1; },
+  _drawObstacles() {
+    const d = GS.activeDistrict;
+    ctx.save();
+    for (const o of GS.obstacles) {
+      ctx.save();
+      // ── Boss obstacles ──
+      if (o.boss) {
+        if (o.type === 'ghost') {
+          // Deception flicker — real obs are solid-ish, fakes nearly invisible
+          const flicker = Math.sin(GS.boss.timer * 25 + o.id) > 0;
+          ctx.globalAlpha = o.fake
+            ? (flicker ? 0.15 : 0.05)
+            : (flicker ? 0.9  : 0.6);
+          ctx.fillStyle   = o.fake ? '#94a3b8' : '#a855f7';
+          ctx.shadowColor = o.fake ? 'rgba(148,163,184,0.3)' : 'rgba(168,85,247,0.6)';
+          ctx.shadowBlur  = 8;
+          ctx.fillRect(o.x, o.y, o.w, o.h);
+        } else if (o.type === 'inversion') {
+          // Inverted = safe gap — render as green outline signal
+          ctx.strokeStyle = '#22c55e';
+          ctx.lineWidth   = 2;
+          ctx.shadowColor = 'rgba(34,197,94,0.5)';
+          ctx.shadowBlur  = 8;
+          ctx.strokeRect(o.x, o.y, o.w, o.h);
+        } else if (o.type === 'glitch') {
+          // Bass-reactive scale pulse
+          const scale = 1 + GS.audio.bass * 0.4;
+          ctx.translate(o.x + o.w / 2, o.y + o.h / 2);
+          ctx.scale(scale, 1);
+          ctx.translate(-(o.w / 2), -(o.h / 2));
+          ctx.fillStyle   = '#a855f7';
+          ctx.shadowColor = 'rgba(168,85,247,0.7)';
+          ctx.shadowBlur  = 14;
+          ctx.fillRect(0, 0, o.w, o.h);
+        } else if (o.type === 'beam-warning') {
+          // Telegraph — gold/amber, semi-transparent
+          ctx.fillStyle   = 'rgba(251,191,36,0.5)';
+          ctx.shadowColor = 'rgba(251,191,36,0.4)';
+          ctx.shadowBlur  = 10;
+          ctx.fillRect(o.x, o.y, o.w, o.h);
+          // Warning chevron overlay
+          ctx.fillStyle = 'rgba(251,191,36,0.8)';
+          ctx.font = '7px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('▶▶▶', o.x + o.w / 2, o.y + o.h / 2 + 3);
+        } else if (o.type === 'beam-active') {
+          // Execution — hot red, full lethal beam
+          ctx.fillStyle   = '#f43f5e';
+          ctx.shadowColor = 'rgba(244,63,94,0.9)';
+          ctx.shadowBlur  = 16;
+          ctx.fillRect(o.x, o.y, o.w, o.h);
+        } else if (o.type === 'laser') {
+          ctx.fillStyle   = '#f43f5e';
+          ctx.shadowColor = 'rgba(244,63,94,0.8)';
+          ctx.shadowBlur  = 12;
+          ctx.fillRect(o.x, o.y, o.w, o.h);
+        } else if (o.type === 'beat') {
+          const scale = 1 + GS.audio.bass * 0.3;
+          ctx.translate(o.x + o.w / 2, o.y + o.h / 2);
+          ctx.scale(scale, 1);
+          ctx.translate(-(o.w / 2), -(o.h / 2));
+          ctx.fillStyle   = '#a855f7';
+          ctx.shadowColor = 'rgba(168,85,247,0.7)';
+          ctx.shadowBlur  = 14;
+          ctx.fillRect(0, 0, o.w, o.h);
+        } else {
+          // fallback boss obstacle
+          ctx.fillStyle   = '#ec4899';
+          ctx.shadowColor = 'rgba(236,72,153,0.6)';
+          ctx.shadowBlur  = 10;
+          ctx.fillRect(o.x, o.y, o.w, o.h);
+        }
+        ctx.restore();
+        continue;
+      }
+      // ── High obstacles (slideable — float above ground) ──
+      if (o.high && !o.boss) {
+        const d = GS.activeDistrict;
+        const hx = o.x, hy = o.y, hw = o.w || 22, hh = o.h || 30;
+        ctx.save();
+        // Warning colouring — amber to signal "duck under me"
+        ctx.fillStyle = '#f59e0b';
+        ctx.shadowColor = 'rgba(245,158,11,0.6)';
+        ctx.shadowBlur = 10;
+        ctx.fillRect(hx, hy, hw, hh);
+        // Arrow pointing down — "slide here"
+        ctx.fillStyle = '#fff';
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'center';
+        ctx.shadowBlur = 0;
+        ctx.fillText('▼', hx + hw / 2, hy + hh / 2 + 3);
+        // Thin connector line from obs to ground (visual clarity)
+        ctx.strokeStyle = 'rgba(245,158,11,0.2)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(hx + hw / 2, hy + hh);
+        ctx.lineTo(hx + hw / 2, C.GY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+        continue;
+      }
+      // ── District obstacles ──
+      ctx.shadowColor = `${d.obstacleTop}99`;
+      ctx.shadowBlur = 12;
+      if (d.id === 'chrome_bridge') {
+        ctx.strokeStyle = d.obstacleTop;
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(o.x, C.GY - 32, 20, 32);
+        ctx.strokeRect(o.x + 4, C.GY - 38, 12, 7);
+      } else if (d.id === 'acid_market' || d.id === 'violet_heights' || d.id === 'kuro_apex') {
+        const g = ctx.createLinearGradient(o.x, C.GY - 38, o.x + 20, C.GY);
+        g.addColorStop(0, d.obstacleTop);
+        g.addColorStop(1, d.obstacleBot);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(o.x + 10, C.GY - 38);
+        ctx.lineTo(o.x + 20, C.GY);
+        ctx.lineTo(o.x, C.GY);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(o.x + 16, C.GY - 26);
+        ctx.lineTo(o.x + 24, C.GY);
+        ctx.lineTo(o.x + 8, C.GY);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        const g = ctx.createLinearGradient(o.x, C.GY - 32, o.x + 20, C.GY);
+        g.addColorStop(0, d.obstacleTop);
+        g.addColorStop(1, d.obstacleBot);
+        ctx.fillStyle = g;
+        ctx.fillRect(o.x, C.GY - 32, 20, 32);
+        ctx.fillStyle = d.obstacleTop;
+        ctx.fillRect(o.x + 4, C.GY - 38, 12, 7);
+      }
+      ctx.restore();
+    }
+    ctx.restore();
+  },
+  _drawBoss() {
+    const amp  = GS.audio.amplitude;
+    const bx   = C.CW - 100;
+    const by   = 90 + Math.sin(GS.boss.timer * 2) * 8; // hover bob
+    const ring = 36 + amp * 18;
+    const phaseColors = ['#a855f7', '#a855f7', '#ec4899', '#ef4444'];
+    const col  = phaseColors[GS.boss.phase] || '#a855f7';
+    ctx.save();
+    // Outer pulse ring
+    ctx.beginPath();
+    ctx.arc(bx, by, ring + 10, 0, Math.PI * 2);
+    ctx.strokeStyle = `${col}44`;
+    ctx.lineWidth   = 6;
+    ctx.stroke();
+    // Core ring
+    ctx.beginPath();
+    ctx.arc(bx, by, ring, 0, Math.PI * 2);
+    ctx.strokeStyle = col;
+    ctx.lineWidth   = 3;
+    ctx.shadowColor = col;
+    ctx.shadowBlur  = 20 + amp * 30;
+    ctx.stroke();
+    // Inner fill
+    ctx.beginPath();
+    ctx.arc(bx, by, ring * 0.5, 0, Math.PI * 2);
+    ctx.fillStyle = `${col}33`;
+    ctx.fill();
+    // Phase label inside
+    ctx.fillStyle   = col;
+    ctx.font        = `bold 9px var(--mono, monospace)`;
+    ctx.textAlign   = 'center';
+    ctx.shadowBlur  = 0;
+    ctx.fillText(GS.boss.phase === 0 ? '???' : `P${GS.boss.phase}`, bx, by + 3);
+    ctx.restore();
+  },
+  _drawBossIntro() {
+    const t     = GS.boss.introTimer;
+    const alpha = Math.min(1, t * 0.5);
+    const pulse = Math.sin(t * 8) * 0.5 + 0.5;
+    const cx    = ctx.canvas.width / 2;
+    const cy    = 200;
+    ctx.save();
+    // Dark vignette (reduced intensity)
+    ctx.fillStyle = `rgba(0,0,0,${0.4 * alpha})`;
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    // Expanding ring (thinner, less intense)
+    ctx.beginPath();
+    ctx.arc(cx, cy, 60 + t * 40, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(168,85,247,${alpha * 0.8})`;
+    ctx.lineWidth   = 2 + pulse * 1.5;
+    ctx.shadowColor = 'rgba(168,85,247,0.6)';
+    ctx.shadowBlur  = 18;
+    ctx.stroke();
+    // Second ring, offset phase (softer)
+    ctx.beginPath();
+    ctx.arc(cx, cy, (60 + t * 40) * 0.6, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(236,72,153,${alpha * 0.5})`;
+    ctx.lineWidth   = 1.5;
+    ctx.stroke();
+    // Text flash (less opaque)
+    ctx.fillStyle = `rgba(255,255,255,${alpha * 0.7})`;
+    ctx.font      = `bold 18px var(--mono, monospace)`;
+    ctx.textAlign = 'center';
+    ctx.fillText("THE SIGNAL", cx, cy + 60);
+    ctx.restore();
+  },
+  _drawPlayerShadow() { ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(GS.player.x+GS.equippedAvatar.w/2, C.GY+3, 14,4,0,0,Math.PI*2); ctx.fill(); },
+  _drawAudioGlow() { const amp=GS.audio.amplitude; if(amp<=0.05) return; ctx.save(); ctx.shadowBlur=12+amp*20; ctx.shadowColor=`rgba(255,200,100,${0.3+amp*0.5})`; ctx.beginPath(); ctx.ellipse(GS.player.x+GS.equippedAvatar.w/2, GS.player.y+GS.equippedAvatar.h/2, 16+amp*12,18+amp*12,0,0,Math.PI*2); ctx.fillStyle=`rgba(255,200,100,${0.15+amp*0.25})`; ctx.fill(); ctx.restore(); },
+  _drawRankAura() {
+    const lv = getLevelFromXP(GS.playerXP);
+    if (lv < 2) return; // ROOKIE has no aura
+    const av = GS.equippedAvatar;
+    const cx = GS.player.x + av.w / 2;
+    const cy = GS.player.y + av.h / 2;
+    const t  = performance.now() / 1000;
+    // Aura tier: 2=soft glow, 4=ring, 6=sparks, 8=GOAT crown particles
+    const tier = Math.min(7, lv - 1); // 1–7 maps to GRINDER→GOAT
+    // Rank colour progression: blue→teal→green→gold→orange→pink→purple→white-gold
+    const AURA_COLS = ['#38bdf8','#22d3ee','#22c55e','#fbbf24','#f97316','#ec4899','#a855f7','#fde68a'];
+    const col = AURA_COLS[Math.min(tier, AURA_COLS.length - 1)];
+    ctx.save();
+    // Tier 1+ — soft ambient glow beneath player
+    const glowR = 18 + tier * 4;
+    const glowA = 0.06 + tier * 0.03;
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowR);
+    g.addColorStop(0, col + Math.floor(glowA * 2.55 * 99).toString(16).padStart(2,'0'));
+    g.addColorStop(1, 'transparent');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, glowR, glowR * 0.7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Tier 3+ — rotating orbit ring
+    if (tier >= 3) {
+      const ringR = 22 + tier * 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, ringR, t * 1.2, t * 1.2 + Math.PI * 1.4);
+      ctx.strokeStyle = col + '99';
+      ctx.lineWidth = 1.5 + tier * 0.3;
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 8;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+    // Tier 5+ — orbiting spark particles
+    if (tier >= 5) {
+      const count = 3 + tier;
+      for (let i = 0; i < count; i++) {
+        const angle = t * 1.8 + (i / count) * Math.PI * 2;
+        const r = 26 + tier * 2 + Math.sin(t * 3 + i) * 3;
+        const sx = cx + Math.cos(angle) * r;
+        const sy = cy + Math.sin(angle) * r * 0.5;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 1.5 + (tier - 5) * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = col;
+        ctx.shadowColor = col;
+        ctx.shadowBlur = 6;
+        ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+    }
+    // Tier 7 (GOAT) — crown particle burst above head + golden shimmer
+    if (tier >= 7) {
+      for (let i = 0; i < 8; i++) {
+        const angle = -Math.PI / 2 + (i / 8) * Math.PI * 2 * 0.6 - Math.PI * 0.3;
+        const r = 28 + Math.sin(t * 4 + i) * 4;
+        const cx2 = cx + Math.cos(angle) * r * 0.8;
+        const cy2 = (GS.player.y - 8) + Math.sin(angle) * r * 0.4;
+        ctx.beginPath();
+        ctx.arc(cx2, cy2, 2 + Math.sin(t * 6 + i) * 0.8, 0, Math.PI * 2);
+        ctx.fillStyle = i % 2 === 0 ? '#fde68a' : '#fbbf24';
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 10;
+        ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+      // GOAT label badge above head
+      ctx.font = 'bold 7px "Share Tech Mono",monospace';
+      ctx.fillStyle = '#fde68a';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = '#fbbf24';
+      ctx.shadowBlur = 8;
+      ctx.fillText('◆ GOAT ◆', cx, GS.player.y - 18);
+      ctx.shadowBlur = 0;
+      ctx.textAlign = 'left';
+    }
+    ctx.restore();
+  },
+  _drawPlayer() {
+    const av = GS.equippedAvatar;
+    const px = GS.player.x, py = GS.player.y;
+    const sliding = GS.player.sliding;
+    const slideH = sliding ? Math.floor(av.h * 0.42) : av.h;
+    const slideY = sliding ? C.GY - slideH : py; // pinned to ground while sliding
+
+    // Speed motion blur (existing)
+    if (GS.speed > 15 && GS.phase === 'RUNNING') {
+      ctx.save();
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = av.color;
+      ctx.fillRect(px - GS.speed * 0.5, sliding ? slideY : py, av.w, slideH);
+      ctx.restore();
+    }
+
+    if (sliding) {
+      // SLIDE RENDER — flat crouched shape with purple afterimage + speed lines
+      ctx.save();
+      // Purple afterimage trail
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = '#a855f7';
+      ctx.fillRect(px - 10, slideY, av.w + 6, slideH);
+      ctx.globalAlpha = 0.12;
+      ctx.fillRect(px - 20, slideY + 2, av.w + 10, slideH - 4);
+      ctx.globalAlpha = 1;
+      // Main slide body — wide and flat
+      ctx.shadowColor = `${av.color}cc`; ctx.shadowBlur = 18;
+      ctx.fillStyle = av.color;
+      ctx.fillRect(px, slideY, av.w, slideH);
+      ctx.shadowBlur = 0;
+      // Head still visible — squished against top
+      ctx.fillStyle = GS.equippedSkin.head;
+      ctx.fillRect(px + 3, slideY - 4, Math.min(17, av.w - 6), 5);
+      // Speed lines during slide
+      const lineAlpha = Math.min(0.7, GS.speed / 13);
+      ctx.strokeStyle = `rgba(168,85,247,${lineAlpha})`;
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 4; i++) {
+        const ly = slideY + 3 + i * (slideH / 4);
+        const len = 15 + i * 8 + GS.speed * 1.5;
+        ctx.beginPath();
+        ctx.moveTo(px - 4, ly);
+        ctx.lineTo(px - 4 - len, ly);
+        ctx.stroke();
+      }
+      ctx.restore();
+    } else {
+      // NORMAL RENDER (unchanged)
+      ctx.shadowColor = `${av.color}99`; ctx.shadowBlur = 14;
+      ctx.fillStyle = av.color;
+      ctx.fillRect(px, py, av.w, av.h);
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = GS.equippedSkin.head;
+      ctx.fillRect(px + 5, py - 7, 17, 9);
+      ctx.fillStyle = '#fff'; ctx.fillRect(px + av.w - 7, py + 7, 6, 6);
+      ctx.fillStyle = '#000'; ctx.fillRect(px + av.w - 5, py + 9, 3, 3);
+      if (GS.phase === 'RUNNING' && GS.player.grounded && GS.equippedGear?.id !== 'sneakers') {
+        const loff = Math.sin(performance.now() / 120) * 5;
+        ctx.fillStyle = av.color;
+        ctx.fillRect(px + 3, py + av.h, 7, 6 + loff);
+        ctx.fillRect(px + av.w - 10, py + av.h, 7, 6 - loff);
+      }
+      drawProceduralHands(ctx, px, py, av.w, av.h, GS.player.grounded, GS.audio.amplitude, this.frame, GS.speed);
+    }
+  },
+  _drawHeadphones() {
+    if (!GS.equippedGear || GS.equippedGear.id !== 'headphones') return;
+    const hx = GS.player.x + 4, hy = GS.player.y - 9;
+    // Arch band
+    ctx.beginPath(); ctx.moveTo(hx + 1, hy + 3);
+    ctx.quadraticCurveTo(hx + 9, hy - 5, hx + 17, hy + 3);
+    ctx.lineWidth = 2.5; ctx.strokeStyle = '#334155'; ctx.stroke();
+    // Left ear cup
+    ctx.beginPath(); ctx.ellipse(hx + 1, hy + 6, 3, 4, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#1e40af'; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(hx + 1, hy + 6, 1.5, 2.5, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#38bdf8'; ctx.fill();
+    // Right ear cup
+    ctx.beginPath(); ctx.ellipse(hx + 17, hy + 6, 3, 4, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#1e40af'; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(hx + 17, hy + 6, 1.5, 2.5, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#38bdf8'; ctx.fill();
+  },
+  _drawBackpack() {
+    if (!GS.equippedGear || GS.equippedGear.id !== 'backpack') return;
+    const px = GS.player.x, py = GS.player.y, av = GS.equippedAvatar;
+    // Backpack body — sits behind player, offset left
+    const bx = px - 8, by = py + 4;
+    ctx.save();
+    // Main body
+    ctx.fillStyle = '#14532d';
+    ctx.beginPath(); ctx.roundRect(bx, by, 7, 12, 2); ctx.fill();
+    // Top flap
+    ctx.fillStyle = '#166534';
+    ctx.beginPath(); ctx.roundRect(bx, by - 3, 7, 5, 1); ctx.fill();
+    // Buckle/pocket
+    ctx.fillStyle = '#22c55e';
+    ctx.fillRect(bx + 1, by + 4, 5, 3);
+    ctx.fillStyle = '#4ade80'; ctx.fillRect(bx + 2, by + 5, 3, 1);
+    // Shoulder strap visible on player side
+    ctx.strokeStyle = '#166534'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(bx + 7, by + 1); ctx.lineTo(px + 2, py + 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bx + 7, by + 8); ctx.lineTo(px + 2, py + av.h * 0.6); ctx.stroke();
+    ctx.restore();
+  },
+  _drawSneakers() {
+    if (!GS.equippedGear || GS.equippedGear.id !== 'sneakers') return;
+    const px = GS.player.x, py = GS.player.y, av = GS.equippedAvatar;
+    const gy = py + av.h;
+    // Use same loff as base leg animation to stay in sync
+    const loff = (GS.phase === 'RUNNING' && GS.player.grounded) ? Math.sin(performance.now() / 120) * 5 : 0;
+    ctx.save();
+    // Left sneaker — replaces plain leg
+    const lx = px + 2, ly = gy + 1 + loff;
+    ctx.fillStyle = '#4c1d95'; // dark purple sole
+    ctx.beginPath(); ctx.roundRect(lx, ly + 5, 10, 4, 2); ctx.fill();
+    ctx.fillStyle = '#7c3aed'; // upper
+    ctx.beginPath(); ctx.roundRect(lx, ly, 8, 6, 2); ctx.fill();
+    ctx.fillStyle = '#c4b5fd'; // stripe
+    ctx.fillRect(lx + 1, ly + 1, 6, 1.5);
+    ctx.fillStyle = '#ddd6fe'; // toe cap highlight
+    ctx.beginPath(); ctx.ellipse(lx + 7, ly + 3, 2, 2, 0, 0, Math.PI * 2); ctx.fill();
+    // Right sneaker
+    const rx = px + av.w - 11, ry = gy + 1 - loff;
+    ctx.fillStyle = '#4c1d95';
+    ctx.beginPath(); ctx.roundRect(rx, ry + 5, 10, 4, 2); ctx.fill();
+    ctx.fillStyle = '#7c3aed';
+    ctx.beginPath(); ctx.roundRect(rx, ry, 8, 6, 2); ctx.fill();
+    ctx.fillStyle = '#c4b5fd';
+    ctx.fillRect(rx + 1, ry + 1, 6, 1.5);
+    ctx.fillStyle = '#ddd6fe';
+    ctx.beginPath(); ctx.ellipse(rx + 7, ry + 3, 2, 2, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  },
+  _drawShades() {
+    if (!GS.equippedGear || GS.equippedGear.id !== 'shades') return;
+    const px = GS.player.x, py = GS.player.y;
+    ctx.save();
+    // Frame bridge at eye level
+    const ex = px + 4, ey = py - 4;
+    ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 6;
+    // Left lens
+    ctx.fillStyle = 'rgba(26,16,0,0.85)';
+    ctx.beginPath(); ctx.ellipse(ex + 4, ey + 3, 5, 4, -0.2, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(ex + 4, ey + 3, 5, 4, -0.2, 0, Math.PI * 2); ctx.stroke();
+    // Right lens
+    ctx.fillStyle = 'rgba(26,16,0,0.85)';
+    ctx.beginPath(); ctx.ellipse(ex + 14, ey + 3, 5, 4, 0.2, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(ex + 14, ey + 3, 5, 4, 0.2, 0, Math.PI * 2); ctx.stroke();
+    // Bridge
+    ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(ex + 9, ey + 3); ctx.lineTo(ex + 9, ey + 3); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ex + 8.5, ey + 3); ctx.lineTo(ex + 9.5, ey + 3); ctx.stroke();
+    // Lens highlight glint
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.beginPath(); ctx.ellipse(ex + 2, ey + 1, 1.5, 1, -0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(ex + 12, ey + 1, 1.5, 1, 0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  },
+  _drawChain() {
+    if (!GS.equippedGear || GS.equippedGear.id !== 'chain') return;
+    const px = GS.player.x, py = GS.player.y, av = GS.equippedAvatar;
+    const cx = px + av.w / 2;
+    const t = performance.now() / 1000;
+    ctx.save();
+    ctx.shadowColor = '#f97316'; ctx.shadowBlur = 8;
+    // Chain links — looping arc across chest
+    ctx.strokeStyle = '#f97316'; ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.arc(cx, py + 6, 8, 0.3, Math.PI - 0.3);
+    ctx.stroke();
+    // Chain links detail
+    ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1;
+    for (let i = 0; i < 5; i++) {
+      const a = 0.3 + (i / 4) * (Math.PI - 0.6);
+      const lx = cx + Math.cos(a) * 8, ly = py + 6 + Math.sin(a) * 8;
+      ctx.beginPath(); ctx.arc(lx, ly, 1.2, 0, Math.PI * 2); ctx.stroke();
+    }
+    // Pendant — swings subtly
+    const swing = Math.sin(t * 2.5) * 2;
+    const px2 = cx + swing, py2 = py + 15;
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath(); ctx.arc(px2, py2, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#f97316'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(px2, py2, 3, 0, Math.PI * 2); ctx.stroke();
+    // Tiny K glyph on pendant
+    ctx.fillStyle = '#1a0800'; ctx.font = 'bold 4px monospace'; ctx.textAlign = 'center';
+    ctx.fillText('K', px2, py2 + 1.5);
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  },
+  _drawAudioSparkles() { const bass=GS.audio.bass; if(bass<=0) return; const count=Math.floor(bass*3)+1; for(let i=0;i<count;i++){ ctx.fillStyle=`rgba(255,100,50,${bass*0.5})`; ctx.beginPath(); ctx.arc(GS.player.x+Math.random()*GS.equippedAvatar.w, GS.player.y+Math.random()*GS.equippedAvatar.h, 2+bass*3,0,Math.PI*2); ctx.fill(); } },
+  _drawVictory() {
+    // Brief purple flash — fades over ~2s using boss.timer as proxy
+    const alpha = Math.max(0, 0.22 - (GS.boss.timer < 2 ? (GS.frame % 60) / 600 : 0));
+    if (alpha <= 0) return;
+    ctx.save();
+    ctx.fillStyle = `rgba(168,85,247,${alpha})`;
+    ctx.fillRect(0, 0, C.CW, C.CH);
+    ctx.font = `bold 28px "Bebas Neue",sans-serif`;
+    ctx.fillStyle = `rgba(251,191,36,${Math.min(1, alpha * 5)})`;
+    ctx.textAlign = 'center';
+    ctx.fillText(`LOOP ${GS.loopLevel} — SIGNAL RETURNS`, C.CW / 2, C.CH / 2 - 10);
+    ctx.restore();
+  },
+  _drawCanvasHUD() { ctx.font='10px "Share Tech Mono",monospace'; ctx.fillStyle='rgba(148,163,184,0.5)'; ctx.textAlign='left'; ctx.fillText(`INC lv${GS.incomeLevel}  JMP lv${GS.jumpLevel}  SCR lv${GS.scoreLevel}`,10,22); ctx.fillStyle=`${GS.activeDistrict.color}99`; ctx.fillText(`◆ ${GS.activeDistrict.name}`,10,36); if(GS.phase==='RUNNING'){ ctx.textAlign='right'; ctx.fillStyle='rgba(125,211,252,0.7)'; ctx.fillText(`SPD ${GS.speed.toFixed(1)}  RUN ${Math.floor(GS.runScore)}`, C.CW-10,22); if(GS.audio.active && GS.audio.bass>0.8){ ctx.fillStyle='rgba(251,191,36,0.85)'; ctx.fillText('⚡ SAFETY LANE', C.CW-10, 36); } } },
+  _drawRankUpFlash() { if (!GS.pendingRankUpName) return; ctx.textAlign='center'; ctx.font='bold 20px "Bebas Neue",sans-serif'; ctx.fillStyle='#fbbf24'; ctx.fillText(`⬆ RANK UP — ${GS.pendingRankUpName}`, C.CW/2, C.CH/2-24); },
+  _drawStateOverlay() { ctx.textAlign='center'; if(GS.phase==='IDLE'){ ctx.font='bold 28px "Bebas Neue",sans-serif'; ctx.fillStyle='rgba(255,207,154,0.9)'; ctx.fillText('PRESS  START RUN', C.CW/2,80); if(GS.mStats.runs>0){ ctx.font='11px "Share Tech Mono",monospace'; ctx.fillStyle='rgba(148,163,184,0.45)'; ctx.fillText(`RUNS: ${GS.mStats.runs}  |  XP: ${GS.playerXP}  |  ${getRankNameFromXP(GS.playerXP)}`, C.CW/2,104); } } if(GS.phase==='GAME_OVER'){ ctx.fillStyle='rgba(0,0,0,0.65)'; ctx.fillRect(0,0,C.CW,C.CH); ctx.font='bold 40px "Bebas Neue",sans-serif'; ctx.fillStyle='#ef4444'; ctx.fillText('CRITICAL FAILURE', C.CW/2, C.CH/2-28); ctx.font='13px "Share Tech Mono",monospace'; ctx.fillStyle='#f8fafc'; ctx.fillText(`Banked: ${Math.floor(GS.runScoreBuffer)} pts → $${(GS.runScoreBuffer*C.SCORE_TO_CASH).toFixed(1)}`, C.CW/2, C.CH/2+12); ctx.font='11px "Share Tech Mono",monospace'; ctx.fillStyle='#64748b'; ctx.fillText('RETRY  or  COLLECT EARNINGS', C.CW/2, C.CH/2+38); } ctx.textAlign='left'; },
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 10 — UI SYNC (DOM updates)
+════════════════════════════════════════════════════════════════════ */
+const DOM = {
+  cap: document.getElementById('capDisplay'), runDisp: document.getElementById('runDisp'), best: document.getElementById('bestDisplay'),
+  badge: document.getElementById('stateBadge'), sfill: document.getElementById('speedFill'), startBtn: document.getElementById('startBtn'),
+  startLbl: document.getElementById('startLbl'), collectBtn: document.getElementById('collectBtn'), collectPv: document.getElementById('collectPv'),
+  uIncCost: document.getElementById('uIncCost'), uJmpCost: document.getElementById('uJmpCost'), uScrCost: document.getElementById('uScrCost'),
+  pipInc: document.getElementById('pipInc'), pipJmp: document.getElementById('pipJmp'), pipScr: document.getElementById('pipScr'),
+  uInc: document.getElementById('uInc'), uJmp: document.getElementById('uJmp'), uScr: document.getElementById('uScr'),
+  xpFill: document.getElementById('xpFill'), xpLabel: document.getElementById('xpLabel'), rankBadge: document.getElementById('rankBadge'),
+  gameEl: document.getElementById('game'), cframe: document.getElementById('cframe'), hsFlash: document.getElementById('hsFlash'),
+  toastBox: document.getElementById('toasts'), missionList: document.getElementById('missionList'), skinGrid: document.getElementById('skinGrid'),
+  trailGrid: document.getElementById('trailGrid'), gearGrid: document.getElementById('gearGrid'), avatarGrid: document.getElementById('avatarGrid'),
+  lbList: document.getElementById('lbList'), audioBtn: document.getElementById('audioBtn'),
+  districtList: document.getElementById('districtList'),
+  skillGrid: document.getElementById('skillGrid'),
+  bossUi: document.getElementById('bossUi'),
+  bossHp: document.getElementById('boss-hp'),
+  bossPhaseLabel: document.getElementById('bossPhaseLabel'),
+  packList: document.getElementById('packList'),
+};
+const BADGE_COL = { IDLE:'#38bdf8', RUNNING:'#22c55e', GAME_OVER:'#ef4444' };
+const TOAST_COOLDOWN = 800;
+const _toastTimes = new Map();
+function _deliverToast(msg,color,cat){ const now=Date.now(); if(now-(_toastTimes.get(cat)||0)<TOAST_COOLDOWN) return; _toastTimes.set(cat,now); const el=document.createElement('div'); el.className='toast'; el.style.background=color; el.style.color='#111'; el.textContent=msg; DOM.toastBox.appendChild(el); el.addEventListener('animationend',()=>el.remove(),{once:true}); setTimeout(()=>{ if(el.parentNode) el.remove(); },3200); }
+let _sfxCtx=null;
+function _deliverSFX(type){ try{ if(!_sfxCtx) _sfxCtx=new (window.AudioContext||window.webkitAudioContext)(); const actx=_sfxCtx; const now=actx.currentTime; const gain=actx.createGain(); gain.gain.value=0.18; gain.connect(actx.destination); const osc=actx.createOscillator(); if(type==='jump'){ osc.type='sine'; osc.frequency.setValueAtTime(440,now); osc.frequency.exponentialRampToValueAtTime(220,now+0.15); osc.connect(gain); osc.start(); osc.stop(now+0.15); }else if(type==='collision'){ osc.type='triangle'; osc.frequency.setValueAtTime(120,now); osc.frequency.exponentialRampToValueAtTime(60,now+0.2); osc.connect(gain); osc.start(); osc.stop(now+0.2); }else if(type==='reward'){ osc.type='sine'; osc.frequency.setValueAtTime(880,now); osc.frequency.exponentialRampToValueAtTime(440,now+0.1); osc.connect(gain); osc.start(); osc.stop(now+0.1); } gain.gain.exponentialRampToValueAtTime(0.0001,now+0.25); }catch{} }
+function _deliverDomEvent(ev){ if(ev.type==='cashPop'){ const d=document.createElement('div'); d.className='cash-pop'; d.textContent=`+$${typeof ev.payload.amount==='number'?ev.payload.amount.toFixed(1):ev.payload.amount}`; d.style.left=ev.payload.leftPct||`${20+Math.random()*60}%`; d.style.bottom='38%'; DOM.cframe.appendChild(d); setTimeout(()=>d.remove(),950); }else if(ev.type==='comboPop'){ const d=document.createElement('div'); d.className='combo-pop'; d.textContent=ev.payload.text; d.style.color=ev.payload.color||'var(--gold)'; d.style.left='50%'; d.style.top='35%'; d.style.transform='translateX(-50%)'; DOM.cframe.appendChild(d); setTimeout(()=>d.remove(),720); }else if(ev.type==='hsFlash'){ DOM.hsFlash.classList.remove('show'); void DOM.hsFlash.offsetWidth; DOM.hsFlash.classList.add('show'); setTimeout(()=>DOM.hsFlash.classList.remove('show'),2300); }else if(ev.type==='shake'){ DOM.gameEl.classList.remove('shake'); void DOM.gameEl.offsetWidth; DOM.gameEl.classList.add('shake'); setTimeout(()=>DOM.gameEl.classList.remove('shake'),460); }else if(ev.type==='missionsChanged'){ UISync.renderMissions(); }else if(ev.type==='districtChanged'){ UISync.renderDistricts(); }else if(ev.type==='skillChanged'){ UISync.renderSkillTree(); }else if(ev.type==='packChanged'){ UISync.renderStore(); }else if(ev.type==='playMusic'){ PreviewAudio.stop(); IdleHum.stop(); GameMusic.play(ev.url); }else if(ev.type==='stopMusic'){ GameMusic.stop(); }else if(ev.type==='shopChanged'){ UISync.renderShop(); }else if(ev.type==='purchaseRequest'){
+  // Stripe Payment Links — replace test URLs with live links before shipping
+  const STRIPE_LINKS = {
+    midnight_tokyo:  'https://buy.stripe.com/test_midnight_tokyo',
+    underground_sa:  'https://buy.stripe.com/test_underground_sa',
+  };
+  const link = STRIPE_LINKS[ev.packId];
+  if (link) window.open(link, '_blank');
+}else if(ev.type==='downloadTrack'||ev.type==='downloadPack'){
+  // downloadPack opens all track URLs; downloadTrack opens the single track file
+  const dlPack = AUDIO_PACKS[ev.packId];
+  if (!dlPack) return;
+  if (ev.type === 'downloadPack' && dlPack.track) {
+    // Open each distinct track — currently single file, ready for multi-track expansion
+    window.open(dlPack.track, '_blank');
+  } else if (dlPack.track) {
+    window.open(dlPack.track, '_blank');
+  }
+}else if(ev.type==='toast'){
+  _deliverToast(ev.msg || '', ev.color || '#38bdf8', ev.cat || 'toast_' + Date.now());
+}else if(ev.type==='victory'){
+  pushToast('SIGNAL DEFEATED', '#fbbf24', 'victory');
+  vibrate(120);
+  // Share moment — boss defeat is the biggest win event
+  setTimeout(() => showShareModal('boss_defeat'), 1800); // slight delay so victory flash plays first
+}else if(ev.type==='screenFlash'){
+  GS.feedback.flash = 1;
+}else if(ev.type==='streakPulse'){
+  // UISync handles the visual; nothing DOM-heavy needed here
+}else if(ev.type==='purchaseSuccess'){
+  window.unlockPack(ev.packId);
+}else if(ev.type==='shareCard'){
+  // Delay slightly so GAME_OVER overlay is visible first
+  setTimeout(() => showShareModal(ev.trigger), 900);
+}else if(ev.type==='submitScore'){
+  // Submit score to live leaderboard — prompt name if first time
+  const _doSubmit = (name) => {
+    const rank = getRankNameFromXP(GS.playerXP);
+    fetch(LB_WORKER_URL + '/score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, score: ev.score, rank }),
+    })
+    .then(r => r.ok ? pushToast('◆ Score submitted', '#38bdf8', 'lb_submit') : null)
+    .catch(() => {}); // silent fail — offline is fine
+  };
+  const storedName = localStorage.getItem('kuro_playerName');
+  if (storedName) {
+    _doSubmit(storedName);
+  } else {
+    // Show name entry modal — player must name themselves first
+    const modal = document.getElementById('nameModal');
+    const input = document.getElementById('nameInput');
+    if (modal && input) {
+      modal.classList.add('open');
+      input.value = '';
+      input.focus();
+      const _onSubmit = () => {
+        const raw = input.value.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '');
+        if (!raw || raw.length < 2) { input.style.borderColor = 'var(--red)'; return; }
+        const name = raw.slice(0, 12);
+        localStorage.setItem('kuro_playerName', name);
+        modal.classList.remove('open');
+        _doSubmit(name);
+      };
+      document.getElementById('nameSubmit').onclick = _onSubmit;
+      input.onkeydown = e => { if (e.key === 'Enter') _onSubmit(); };
+    }
+  }
+} }
+function _renderPips(el,lv,maxed){ const MAX=C.MAX_UPG; if(el.children.length!==MAX){ el.innerHTML=''; for(let i=0;i<MAX;i++){ const p=document.createElement('div'); p.className='pip'; el.appendChild(p); } } for(let i=0;i<MAX;i++) el.children[i].className='pip'+(i<lv?(maxed?' gold':' on'):''); }
+
+// ── Stripe purchase success webhook entry point ──
+// Called by Stripe success page or webhook redirect — e.g. window.unlockPack('midnight_tokyo')
+window.unlockPack = function(packId) {
+  if (!AUDIO_PACKS[packId]) return;
+  if (!GS.ownedPacks.includes(packId)) {
+    resetPreview();
+    GS.ownedPacks.push(packId);
+    Persist.savePacks();
+    GS.equippedPack = packId;
+    if (AUDIO_PACKS[packId].track) GS.domEvents.push({ type: 'playMusic', url: AUDIO_PACKS[packId].track });
+    GS.domEvents.push({ type: 'screenFlash' });
+    GS.domEvents.push({ type: 'packChanged' });
+    pushToast(`✓ ${AUDIO_PACKS[packId].name} UNLOCKED`, '#fbbf24', 'pack_unlocked_' + packId);
+    GS.sfxQueue.push({ type: 'reward' });
+    vibrate(80);
+  }
+};
+
+const UISync = {
+  sync(){ if(GS.capital<0) GS.capital=0; DOM.cap.textContent=`$${Math.floor(GS.capital)}`; DOM.runDisp.textContent=Math.floor(GS.runScore); DOM.best.textContent=Math.floor(GS.bestRunScore); DOM.badge.textContent=GS.phase; DOM.badge.style.color=BADGE_COL[GS.phase]||'#fff'; const spPct=Math.max(0,((GS.speed-C.BASESPD)/(C.MAXSPD-C.BASESPD))*100); DOM.sfill.style.width=GS.phase==='RUNNING'?`${spPct}%`:'0%'; const hue=spPct<40?`hsl(200,88%,65%)`:spPct<75?`hsl(${200-spPct*1.8|0},88%,62%)`:`hsl(10,85%,60%)`; DOM.sfill.style.background=hue; DOM.sfill.style.boxShadow=`0 0 10px ${hue}`; DOM.startBtn.disabled=GS.phase==='RUNNING'; DOM.startLbl.textContent=GS.phase==='GAME_OVER'?'Retry':'Start Run'; const canCollect=GS.phase!=='RUNNING'&&GS.runScoreBuffer>0; DOM.collectBtn.disabled=!canCollect; DOM.collectPv.textContent=`$${(GS.runScoreBuffer*C.SCORE_TO_CASH).toFixed(1)} ready`; DOM.collectBtn.classList.toggle('pulse',canCollect); const iM=GS.incomeLevel>=C.MAX_UPG, jM=GS.jumpLevel>=C.MAX_UPG, sM=GS.scoreLevel>=C.MAX_UPG; DOM.uIncCost.textContent=iM?'MAX OUT':`$${GS.incomeCost}`; DOM.uJmpCost.textContent=jM?'MAX OUT':`$${GS.jumpCost}`; DOM.uScrCost.textContent=sM?'MAX OUT':`$${GS.scoreCost}`; DOM.uInc.classList.toggle('locked',iM||GS.capital<GS.incomeCost); DOM.uJmp.classList.toggle('locked',jM||GS.capital<GS.jumpCost); DOM.uScr.classList.toggle('locked',sM||GS.capital<GS.scoreCost); DOM.uInc.classList.toggle('maxed',iM); DOM.uJmp.classList.toggle('maxed',jM); DOM.uScr.classList.toggle('maxed',sM); _renderPips(DOM.pipInc,GS.incomeLevel,iM); _renderPips(DOM.pipJmp,GS.jumpLevel,jM); _renderPips(DOM.pipScr,GS.scoreLevel,sM); const xpPct=Math.round(getXPFraction(GS.playerXP)*100); DOM.xpFill.style.width=xpPct+'%'; const lv=getLevelFromXP(GS.playerXP); const base=xpForLevel(lv), span=xpForLevel(lv+1)-base; DOM.xpLabel.textContent=`${Math.max(0,GS.playerXP-base)} / ${Math.max(1,span)} XP`; DOM.rankBadge.textContent=getRankNameFromXP(GS.playerXP); DOM.xpFill.style.filter=GS.audioFx.xpBrightness>1?`brightness(${GS.audioFx.xpBrightness})`:''; DOM.cap.style.textShadow=GS.audioFx.capitalGlow>0?`0 0 ${GS.audioFx.capitalGlow}px #fbbf24`:''; if(GS.pendingRankUpName) GS.pendingRankUpName=null; if(GS.audio.active){ DOM.audioBtn.textContent=GS.audio.micActive?'MIC ACTIVE':'BEAT MODE ON'; DOM.audioBtn.disabled=false; DOM.audioBtn.style.opacity='1'; }else{ DOM.audioBtn.textContent='ENABLE AUDIO'; DOM.audioBtn.disabled=false; DOM.audioBtn.style.opacity='1'; }
+    // Track mode label
+    // Track mode button removed — audioMode internal only
+    // Streak icon pulse toggle
+    const streakEl = document.querySelector('.kuro-icon.streak-active, .streak-fire');
+    if (streakEl) {
+      streakEl.classList.toggle('streak-active', GS.streak.active);
+    } for(const sfx of GS.sfxQueue) _deliverSFX(sfx.type); GS.sfxQueue.length=0; for(const ev of GS.domEvents) _deliverDomEvent(ev); GS.domEvents.length=0; for(const t of GS.toastQueue) _deliverToast(t.msg,t.color,t.cat); GS.toastQueue.length=0;
+    // Boss UI: health bar with audio-reactive pulse
+    if (DOM.bossUi) {
+      if (GS.boss.active) {
+        DOM.bossUi.classList.add('active');
+        const hpPercent = (GS.boss.hp / GS.boss.maxHp) * 100;
+        if (DOM.bossHp) {
+          DOM.bossHp.style.width = `${hpPercent}%`;
+          DOM.bossHp.style.boxShadow = `0 0 ${10 + GS.audio.amplitude * 20}px #a855f7`;
+        }
+        const phaseLabels = ['INCOMING…', 'PHASE 1 — PULSE', 'PHASE 2 — CHAOS', 'PHASE 3 — OVERLOAD'];
+        if (DOM.bossPhaseLabel) DOM.bossPhaseLabel.textContent = phaseLabels[GS.boss.phase] || '';
+      } else {
+        DOM.bossUi.classList.remove('active');
+      }
+    }
+  },
+  renderMissions(){ DOM.missionList.innerHTML=''; const rarityColor={ common:'#94a3b8', rare:'#a78bfa', epic:'#fbbf24' }; for(let s=0;s<3;s++){ const def=GS.activeMissionSlots[s]; if(!def){ const empty=document.createElement('div'); empty.style.cssText='padding:10px;font-size:.62rem;color:var(--dim);text-align:center'; empty.textContent='— Loading mission... —'; DOM.missionList.appendChild(empty); continue; } const st=GS.missionSlotState[s]; const pct=Math.min(100,(st.progress/def.target)*100).toFixed(1); const mult=RARITY_MULT[def.rarity]||1; const row=document.createElement('div'); row.className='mission'; row.innerHTML=`<span class="m-icon">${def.icon}</span><div class="m-info"><div class="m-name">${def.label}<span style="font-size:.5rem;color:${rarityColor[def.rarity]}">[${def.rarity.toUpperCase()}]</span></div><div class="m-prog-track"><div class="m-prog-fill" style="width:${pct}%;background:${st.ready?'var(--green)':'var(--blue)'}"></div></div><div class="m-prog-label">${Math.floor(st.progress)} / ${def.target}</div></div><span class="m-reward">+$${def.cash*mult}</span>`; if(st.ready&&!st.claimed){ const btn=document.createElement('button'); btn.className='m-claim'; btn.textContent='CLAIM'; btn.onclick=(function(slot){ return function(e){ e.stopPropagation(); INPUT.claimMissionSlot=slot; }; })(s); row.appendChild(btn); }else if(st.claimed){ const ck=document.createElement('span'); ck.textContent='↻'; ck.title='New mission incoming…'; ck.style.cssText='color:var(--blue);font-size:1rem;font-weight:bold;'; row.appendChild(ck); } DOM.missionList.appendChild(row); } },
+  renderShop(){ DOM.skinGrid.innerHTML=''; SKINS.forEach(s=>{ const card=document.createElement('div'); card.className='skin-card'+(s.owned?' owned':'')+(GS.equippedSkin.id===s.id?' equipped':''); card.innerHTML=`<div class="skin-preview" style="background:${s.body};box-shadow:0 0 8px ${s.body}44"><div style="position:absolute;top:2px;left:50%;transform:translateX(-50%);width:12px;height:7px;background:${s.head};border-radius:2px"></div></div><span class="skin-name">${s.name}</span><span class="skin-price">${s.owned?(GS.equippedSkin.id===s.id?'ON':'USE'):'$'+s.price}</span>${s.owned&&GS.equippedSkin.id===s.id?'<span class="skin-owned-badge">✓</span>':''}`; card.addEventListener('click',()=>{ if(!s.owned) INPUT.buySkinId=s.id; else INPUT.equipSkinId=s.id; }); DOM.skinGrid.appendChild(card); }); DOM.trailGrid.innerHTML=''; TRAILS.forEach(t=>{ const card=document.createElement('div'); card.className='skin-card'+(t.owned?' owned':'')+(GS.equippedTrail.id===t.id?' equipped':''); const clr=t.color?t.color+'0.8)':'rgba(100,100,100,0.5)'; card.innerHTML=`<div class="skin-preview" style="background:linear-gradient(90deg,${clr},transparent);border-radius:3px"></div><span class="skin-name">${t.name}</span><span class="skin-price">${t.owned?(GS.equippedTrail.id===t.id?'ON':'USE'):'$'+t.price}</span>${t.owned&&GS.equippedTrail.id===t.id?'<span class="skin-owned-badge">✓</span>':''}`; card.addEventListener('click',()=>{ if(!t.owned) INPUT.buyTrailId=t.id; else INPUT.equipTrailId=t.id; }); DOM.trailGrid.appendChild(card); }); DOM.gearGrid.innerHTML='';
+    const GEAR_ICONS = {
+      headphones: { bg:'#0e1e2e', svg:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round"><path d="M3 14v-2a9 9 0 0118 0v2"/><rect x="2" y="14" width="4" height="6" rx="2"/><rect x="18" y="14" width="4" height="6" rx="2"/></svg>` },
+      backpack:   { bg:'#0d1f0d', svg:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="5" width="12" height="16" rx="3"/><path d="M9 5V3.5a1.5 1.5 0 013 0V5"/><path d="M8 12h8M8 15h5"/></svg>` },
+      sneakers:   { bg:'#120d20', svg:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16l2-9 3 4 3-7 5 6 4-2-2 8H2z"/><line x1="2" y1="16" x2="22" y2="16"/></svg>` },
+      shades:     { bg:'#1a1000', svg:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round"><path d="M2 9h20"/><path d="M2 9c0 3.31 1.79 6 4 6s4-2.69 4-6M10 9c0 3.31 1.79 6 4 6s4-2.69 4-6"/><path d="M6 15c.5 1.5 2 2 4 1m4-1c.5 1.5 2 2 4 1"/></svg>` },
+      chain:      { bg:'#1a0800', svg:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="1.8" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>` },
+    };
+    GEAR.forEach(g=>{ const card=document.createElement('div'); card.className='skin-card'+(g.owned?' owned':'')+(GS.equippedGear&&GS.equippedGear.id===g.id?' equipped':''); const gi=GEAR_ICONS[g.id]||{bg:'#1e293b',svg:''}; card.innerHTML=`<div class="skin-preview" style="background:${gi.bg};border-radius:8px;display:flex;align-items:center;justify-content:center;">${gi.svg}</div><span class="skin-name">${g.name}</span><span class="skin-price">${g.owned?(GS.equippedGear&&GS.equippedGear.id===g.id?'ON':'USE'):'$'+g.price}</span>${g.owned&&GS.equippedGear&&GS.equippedGear.id===g.id?'<span class="skin-owned-badge">✓</span>':''}`; card.addEventListener('click',()=>{ if(!g.owned) INPUT.buyGearId=g.id; else INPUT.equipGearId=g.id; }); DOM.gearGrid.appendChild(card); }); DOM.avatarGrid.innerHTML=''; AVATARS.forEach(a=>{ const card=document.createElement('div'); card.className='skin-card'+(a.owned?' owned':'')+(GS.equippedAvatar.id===a.id?' equipped':''); card.innerHTML=`<div class="skin-preview" style="background:${a.color};border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;">👤</div><span class="skin-name">${a.name}</span><span class="skin-price">${a.owned?(GS.equippedAvatar.id===a.id?'ON':'USE'):'$'+a.price}</span>${a.owned&&GS.equippedAvatar.id===a.id?'<span class="skin-owned-badge">✓</span>':''}`; card.addEventListener('click',()=>{ if(!a.owned) INPUT.buyAvatarId=a.id; else INPUT.equipAvatarId=a.id; }); DOM.avatarGrid.appendChild(card); }); },
+  renderLB() {
+    if (!DOM.lbList) return;
+    const playerName = localStorage.getItem('kuro_playerName') || '';
+    const _render = (rows) => {
+      DOM.lbList.innerHTML = '';
+      // Always inject player's local best if not already in the list
+      const inList = rows.some(r => r.name === playerName);
+      if (playerName && !inList && GS.bestRunScore > 0) {
+        rows = [...rows, { name: playerName, score: Math.floor(GS.bestRunScore), rank: getRankNameFromXP(GS.playerXP), isYou: true }];
+        rows.sort((a, b) => b.score - a.score).splice(50); // keep top 50
+      }
+      rows.forEach((row, i) => {
+        const isYou = row.isYou || row.name === playerName;
+        const rc = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+        const div = document.createElement('div');
+        div.className = 'lb-row' + (isYou ? ' lb-you' : '');
+        div.innerHTML = `<div class="lb-rank ${rc}">${i + 1}</div><div class="lb-name">${isYou ? '▶ ' : ''}${row.name}</div><div class="lb-score">${Math.floor(row.score).toLocaleString()}</div>`;
+        DOM.lbList.appendChild(div);
+      });
+      if (rows.length === 0) {
+        DOM.lbList.innerHTML = '<div class="lb-loading">NO SCORES YET — BE FIRST</div>';
+      }
+    };
+
+    // Show loading indicator immediately
+    DOM.lbList.innerHTML = '<div class="lb-loading">LOADING LEADERBOARD...</div>';
+
+    // Show cached data instantly while fresh data loads
+    if (_lbCache) _render(_lbCache);
+
+    // Don't fire concurrent fetches
+    if (_lbFetching) return;
+    _lbFetching = true;
+
+    fetch(LB_WORKER_URL + '/scores')
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(data => {
+        _lbCache = Array.isArray(data) ? data : [];
+        _render(_lbCache);
+      })
+      .catch(() => {
+        // Worker not yet deployed or offline — fall back gracefully to LB_MOCK
+        if (!_lbCache) {
+          const mock = LB_MOCK.map(r => ({ ...r }));
+          mock.push({ name: playerName || 'YOU', score: Math.floor(GS.bestRunScore), rank: getRankNameFromXP(GS.playerXP), isYou: true });
+          _render(mock.sort((a, b) => b.score - a.score));
+        }
+      })
+      .finally(() => { _lbFetching = false; });
+  },
+  renderSkillTree() {
+    if (!DOM.skillGrid) return;
+    DOM.skillGrid.innerHTML = '';
+    SKILL_DEFS.forEach(def => {
+      const level = GS.skillTree[def.key];
+      const maxed = level >= def.max;
+      const cost = maxed ? 0 : Math.round(def.baseCost * Math.pow(def.costMult, level));
+      const canAfford = GS.capital >= cost;
+      const node = document.createElement('div');
+      node.className = 'skill-node' + (maxed ? ' maxed' : (!canAfford ? ' locked' : ''));
+      // Pip indicators
+      let pipsHtml = '<div class="skill-pips">';
+      for (let i = 0; i < def.max; i++) {
+        pipsHtml += `<div class="skill-pip${i < level ? (maxed ? ' gold' : ' on') : ''}"></div>`;
+      }
+      pipsHtml += '</div>';
+      node.innerHTML = `
+        <div class="skill-icon">${def.icon}</div>
+        <div class="skill-name">${def.name}</div>
+        <div class="skill-desc">${def.desc}</div>
+        ${pipsHtml}
+        <div class="skill-cost">${maxed ? '✓ MAXED' : `$${cost.toLocaleString()}`}</div>`;
+      if (!maxed) {
+        node.addEventListener('click', () => { INPUT.upgradeSkill = def.key; });
+      }
+      DOM.skillGrid.appendChild(node);
+    });
+  },
+  
+  renderDistricts() {
+    if (!DOM.districtList) return;
+    DOM.districtList.innerHTML = '';
+    const playerRank = getLevelFromXP(GS.playerXP);
+    const wrap = document.createElement('div');
+    wrap.className = 'district-list';
+    DISTRICTS.forEach(d => {
+      const isActive = GS.activeDistrict.id === d.id;
+      const rankLocked = !d.owned && playerRank < d.reqRank;
+      const card = document.createElement('div');
+      card.className = 'district-card' + (isActive ? ' active-district' : '') + (rankLocked ? ' locked-district' : '');
+      card.style.borderColor = isActive ? d.color : '';
+      card.style.setProperty('--district-color', d.color);
+      // Gradient accent strip
+      card.style.backgroundImage = isActive ? `linear-gradient(135deg, ${d.color}10, transparent 60%)` : '';
+      // Build perk pills
+      const perkHtml = d.perks.map(p => `<span class="district-perk">${p}</span>`).join('');
+      // Multiplier badge
+      const multMap = { kuro_apex:'3× ALL', violet_heights:'2× AUDIO', acid_market:'+15% $', chrome_bridge:'+10% SCR', neon_quarter:'BASE' };
+      const multLabel = multMap[d.id] || '';
+      // Action button
+      let actionHtml = '';
+      if (isActive) {
+        actionHtml = `<button class="district-action current" disabled>ACTIVE</button>`;
+      } else if (d.owned) {
+        actionHtml = `<button class="district-action enter" data-id="${d.id}">ENTER</button>`;
+      } else if (rankLocked) {
+        actionHtml = `<div style="text-align:center"><button class="district-action" style="background:rgba(255,255,255,.05);color:var(--dim);border:1px solid var(--border);cursor:not-allowed" disabled>🔒 RANK ${d.reqRank}</button></div>`;
+      } else {
+        actionHtml = `<button class="district-action buy" data-id="${d.id}">$${d.price.toLocaleString()}</button>`;
+      }
+      card.innerHTML = `
+        <div class="district-icon" style="text-shadow:0 0 12px ${d.color}">${d.icon}</div>
+        <div class="district-info">
+          <div class="district-name" style="color:${d.color}">${d.name}</div>
+          <div class="district-sub">${d.sub}</div>
+          <div class="district-perks">${perkHtml}<span class="district-perk" style="color:${d.color};border-color:${d.color}44">${multLabel}</span></div>
+          ${rankLocked ? `<div class="district-req">⬆ Reach Rank ${d.reqRank} to unlock</div>` : ''}
+        </div>
+        <div style="flex-shrink:0">${actionHtml}</div>`;
+      // Wire buttons
+      const buyBtn = card.querySelector('.district-action.buy');
+      if (buyBtn) buyBtn.addEventListener('click', () => { INPUT.buyDistrictId = d.id; });
+      const enterBtn = card.querySelector('.district-action.enter');
+      if (enterBtn) enterBtn.addEventListener('click', () => { INPUT.enterDistrictId = d.id; });
+      wrap.appendChild(card);
+    });
+    DOM.districtList.appendChild(wrap);
+  },
+  renderStore() {
+    if (!DOM.packList) return;
+    DOM.packList.innerHTML = '';
+    Object.values(AUDIO_PACKS).forEach(pack => {
+      const owned       = GS.ownedPacks.includes(pack.id);
+      const active      = GS.equippedPack === pack.id;
+      const previewing  = GS.preview.packId === pack.id;
+      const card        = document.createElement('div');
+      card.className    = 'pack-card'
+        + (active      ? ' equipped'   : '')
+        + (previewing  ? ' previewing' : '');
+
+      const modsText = Object.entries(pack.modifiers)
+        .filter(([,v]) => v !== 1)
+        .map(([k,v]) => `${k} ×${v}`)
+        .join('  ·  ') || 'Baseline';
+
+      // Action button: ACTIVE → locked | PREVIEWING → tap again to buy/equip
+      // Not previewing + not owned → preview first tap | owned → equip
+      let actionLabel, actionClass;
+      if (active) {
+        actionLabel = 'ACTIVE'; actionClass = 'active';
+      } else if (previewing && !owned) {
+        actionLabel = `✓ BUY $${pack.cost.toLocaleString()}`; actionClass = 'buy';
+      } else if (previewing && owned) {
+        actionLabel = '✓ EQUIP'; actionClass = 'equip';
+      } else if (owned) {
+        actionLabel = '▶ PREVIEW'; actionClass = 'equip';
+      } else {
+        actionLabel = `▶ PREVIEW`; actionClass = 'buy';
+      }
+
+      // Preview progress indicator
+      const previewBar = previewing
+        ? `<div style="height:2px;background:var(--blue);border-radius:1px;animation:lprog 10s linear forwards;margin-top:6px"></div>`
+        : '';
+
+      card.innerHTML = `
+        <div class="pack-swatch" style="background:linear-gradient(135deg,${pack.visuals.primary},${pack.visuals.secondary})"></div>
+        <div class="pack-info">
+          <div class="pack-name" style="color:${pack.visuals.primary}">${pack.name}${previewing ? ' <span style="font-size:.48rem;color:var(--blue);letter-spacing:.1em">▶ PREVIEWING</span>' : ''}</div>
+          <div class="pack-tracks">${pack.tracks.join('  ·  ')}</div>
+          <div class="pack-mods">${pack.desc}</div>
+          <div class="pack-mods" style="color:${pack.visuals.secondary}">${modsText}</div>
+          ${previewBar}
+        </div>
+        <button class="pack-action ${actionClass}" ${active ? 'disabled' : ''}>${actionLabel}</button>`;
+
+      card.querySelector('.pack-action').addEventListener('click', () => {
+        if (active) return;
+        if (GS.confirmOpen) return; // block preview while confirm modal is open
+        if (!previewing) {
+          // First tap: start preview
+          // ⚠ AUDIO FIX: PreviewAudio.play() called HERE (sync with user gesture),
+          // NOT through INPUT queue → SimInput tick (which runs in rAF, outside
+          // gesture context — mobile browsers block audio there).
+          PreviewAudio.play(pack.preview || null, pack.id);
+          INPUT.previewPack = pack.id; // still flows through INPUT for GS state only
+        } else if (owned) {
+          // Second tap on owned: equip
+          INPUT.selectPack = pack.id;
+        } else {
+          // Second tap on unowned: confirm modal
+          showPurchaseConfirm(pack);
+        }
+      });
+      // Download button for owned packs with hosted audio
+      if (owned && pack.track) {
+        const dlBtn = document.createElement('button');
+        dlBtn.className = 'pack-action equip';
+        dlBtn.style.cssText = 'font-size:.5rem;padding:5px 10px;margin-top:6px;width:100%;letter-spacing:.06em';
+        dlBtn.textContent = '⬇ DOWNLOAD';
+        dlBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          GS.domEvents.push({ type: 'downloadTrack', packId: pack.id });
+        });
+        card.querySelector('.pack-info').appendChild(dlBtn);
+      }
+      DOM.packList.appendChild(card);
+    });
+  },
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 11b — SHARE CARD GENERATOR
+════════════════════════════════════════════════════════════════════ */
+
+// Generates a 1200×630 OG-card-sized share image as a data URL
+// Uses only canvas primitives — no external font loading required
+function generateShareCard(trigger) {
+  const W = 1200, H = 630;
+  const oc = document.createElement('canvas');
+  oc.width = W; oc.height = H;
+  const c = oc.getContext('2d');
+
+  const dist  = GS.activeDistrict;
+  const rank  = getRankNameFromXP(GS.playerXP);
+  const score = Math.floor(GS.bestRunScore);
+  const pack  = GS.equippedPack ? AUDIO_PACKS[GS.equippedPack] : null;
+  const playerName = localStorage.getItem('kuro_playerName') || 'RUNNER';
+
+  // ── Background gradient (district-matched) ──────────────────────
+  const grad = c.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, dist.skyTop || '#050d1a');
+  grad.addColorStop(1, dist.skyBot || '#0d1f35');
+  c.fillStyle = grad;
+  c.fillRect(0, 0, W, H);
+
+  // ── Noise overlay (subtle texture) ──────────────────────────────
+  for (let i = 0; i < 3000; i++) {
+    c.fillStyle = `rgba(255,255,255,${Math.random() * 0.015})`;
+    c.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+  }
+
+  // ── District glow accent bars (left + right edge) ────────────────
+  const accent = dist.color || '#38bdf8';
+  const accentGrad = c.createLinearGradient(0, 0, 0, H);
+  accentGrad.addColorStop(0, accent + '00');
+  accentGrad.addColorStop(0.5, accent + '55');
+  accentGrad.addColorStop(1, accent + '00');
+  c.fillStyle = accentGrad;
+  c.fillRect(0, 0, 4, H);
+  c.fillRect(W - 4, 0, 4, H);
+
+  // ── KURO: RUNNER logo ────────────────────────────────────────────
+  c.textAlign = 'left';
+  c.font = `bold 96px 'Arial Black', 'Arial', sans-serif`;
+  c.fillStyle = '#ffffff';
+  c.shadowColor = accent;
+  c.shadowBlur  = 30;
+  c.fillText('KURO:', 64, 132);
+  c.fillStyle = accent;
+  c.fillText('RUNNER', 64, 232);
+  c.shadowBlur = 0;
+
+  // ── District name badge ──────────────────────────────────────────
+  c.font = '22px monospace';
+  c.fillStyle = accent + 'cc';
+  c.fillText(`◆ ${dist.name}`, 68, 270);
+
+  // ── Trigger headline ─────────────────────────────────────────────
+  const TRIGGERS = {
+    boss_defeat:  '⚡ I DEFEATED THE SIGNAL',
+    new_best:     `🏆 NEW PERSONAL BEST: ${score.toLocaleString()}`,
+    goat_rank:    '◆ I REACHED GOAT RANK',
+    perfect_run:  '💎 PERFECT RUN — ZERO DEATHS',
+  };
+  const headline = TRIGGERS[trigger] || '⚡ KURO: RUNNER';
+
+  c.font = `bold 52px 'Arial Black', 'Arial', sans-serif`;
+  c.fillStyle = '#ffffff';
+  c.shadowColor = 'rgba(0,0,0,0.8)';
+  c.shadowBlur  = 16;
+  c.fillText(headline, 64, 380);
+  c.shadowBlur = 0;
+
+  // ── Stats row ────────────────────────────────────────────────────
+  c.font = '28px monospace';
+  c.fillStyle = 'rgba(255,255,255,0.65)';
+  const stats = [
+    `SCORE ${score.toLocaleString()}`,
+    `RANK ${rank}`,
+    `LOOP ${GS.loopLevel}`,
+    pack ? `PACK ${pack.name}` : '',
+  ].filter(Boolean).join('   ·   ');
+  c.fillText(stats, 64, 450);
+
+  // ── Player name ──────────────────────────────────────────────────
+  c.font = 'bold 34px monospace';
+  c.fillStyle = accent;
+  c.fillText(`▶ ${playerName}`, 64, 516);
+
+  // ── Decorative city silhouette (right side) ──────────────────────
+  c.fillStyle = 'rgba(0,0,0,0.4)';
+  const buildings = [120, 90, 150, 80, 180, 100, 140, 200, 110, 160];
+  let bx = W - 400;
+  buildings.forEach((bh, i) => {
+    const bw = 32 + i * 3;
+    c.fillRect(bx, H - bh, bw, bh);
+    bx += bw + 4;
+  });
+
+  // ── Particle scatter (visual life) ──────────────────────────────
+  for (let i = 0; i < 60; i++) {
+    const px = 600 + Math.random() * 560, py = 50 + Math.random() * 400;
+    const size = Math.random() * 2.5;
+    c.fillStyle = `rgba(${accent.slice(1,3) === '38' ? '56,189,248' : '168,85,247'},${0.15 + Math.random() * 0.35})`;
+    c.beginPath(); c.arc(px, py, size, 0, Math.PI * 2); c.fill();
+  }
+
+  // ── URL watermark ────────────────────────────────────────────────
+  c.font = '22px monospace';
+  c.fillStyle = 'rgba(255,255,255,0.3)';
+  c.textAlign = 'right';
+  c.fillText('kuro-runner.onrender.com', W - 40, H - 28);
+
+  // ── Bottom accent line ───────────────────────────────────────────
+  const bottomLine = c.createLinearGradient(0, 0, W, 0);
+  bottomLine.addColorStop(0, 'transparent');
+  bottomLine.addColorStop(0.5, accent + 'bb');
+  bottomLine.addColorStop(1, 'transparent');
+  c.fillStyle = bottomLine;
+  c.fillRect(0, H - 3, W, 3);
+
+  return oc.toDataURL('image/png');
+}
+
+// Show the share modal with the generated card
+function showShareModal(trigger) {
+  const dataUrl = generateShareCard(trigger);
+  const modal   = document.getElementById('shareModal');
+  const preview = document.getElementById('sharePreview');
+  if (!modal || !preview) return;
+
+  preview.src = dataUrl;
+  modal.classList.add('open');
+
+  const SHARE_TEXT = {
+    boss_defeat:  `⚡ I just defeated THE SIGNAL on KURO: RUNNER!\nCan you beat my score? 🎮`,
+    new_best:     `🏆 Just hit a new personal best on KURO: RUNNER!\nChallenge me 🎮`,
+    goat_rank:    `🐐 I reached GOAT rank on KURO: RUNNER!\nThe grind was real 🎮`,
+    perfect_run:  `💎 Perfect run on KURO: RUNNER — zero deaths!\nCan you do it? 🎮`,
+  };
+  const shareUrl  = 'https://kuro-runner.onrender.com';
+  const shareText = (SHARE_TEXT[trigger] || '🎮 Playing KURO: RUNNER') + `\n${shareUrl}`;
+
+  // ── Native share (mobile) ─────────────────────────────────────
+  document.getElementById('shareNative').onclick = async () => {
+    if (navigator.share) {
+      try {
+        // Try sharing image blob
+        const blob = await (await fetch(dataUrl)).blob();
+        const file = new File([blob], 'kuro-runner.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], text: shareText });
+          return;
+        }
+        // Fallback: share text only
+        await navigator.share({ text: shareText });
+      } catch {}
+    } else {
+      // Desktop: open Twitter intent
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, '_blank');
+    }
+  };
+
+  // ── Copy image to clipboard ───────────────────────────────────
+  document.getElementById('shareCopy').onclick = async () => {
+    try {
+      const blob = await (await fetch(dataUrl)).blob();
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      pushToast('Card copied to clipboard', '#38bdf8', 'share_copy');
+    } catch {
+      // Clipboard API not available — copy URL instead
+      try {
+        await navigator.clipboard.writeText(shareText);
+        pushToast('Link copied!', '#38bdf8', 'share_url');
+      } catch {}
+    }
+  };
+
+  // ── Close ─────────────────────────────────────────────────────
+  document.getElementById('shareClose').onclick = () => modal.classList.remove('open');
+}
+
+// Purchase confirmation — UI layer only, routes through INPUT on confirm
+function showPurchaseConfirm(pack) {
+  const modal = document.getElementById('confirmModal');
+  document.getElementById('confirmPackName').textContent = pack.name;
+  document.getElementById('confirmPackCost').textContent = `$${pack.cost.toLocaleString()} capital`;
+  document.getElementById('confirmPackDesc').textContent = pack.desc;
+  document.getElementById('confirmPackName').style.color = pack.visuals.primary;
+  modal.classList.add('open');
+  GS.confirmOpen = true;
+  document.getElementById('confirmBuy').onclick = () => {
+    modal.classList.remove('open');
+    GS.confirmOpen = false;
+    INPUT.selectPack = pack.id;
+  };
+  document.getElementById('confirmCancel').onclick = () => {
+    modal.classList.remove('open');
+    GS.confirmOpen = false;
+    resetPreview();
+    UISync.renderStore();
+  };
+}
+function wireEvents() {
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); INPUT.jumpQueued = true; }
+    if (e.code === 'ArrowDown' || e.code === 'KeyS') { e.preventDefault(); INPUT.slideQueued = true; }
+  });
+  // Swipe detection: touchend decides jump vs slide based on Y delta
+  // This avoids the gesture-context issue (both actions resolved at touchend)
+  let _touchStartY = 0;
+  let _touchStartX = 0;
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    _touchStartY = e.touches[0].clientY;
+    _touchStartX = e.touches[0].clientX;
+  }, { passive: false });
+  canvas.addEventListener('touchend', e => {
+    e.preventDefault();
+    const deltaY = (e.changedTouches[0].clientY) - _touchStartY;
+    const deltaX = Math.abs(e.changedTouches[0].clientX - _touchStartX);
+    if (deltaY > 40 && deltaX < 60) {
+      // Swipe down — SLIDE
+      INPUT.slideQueued = true;
+    } else {
+      // Tap or upward swipe — JUMP
+      INPUT.jumpQueued = true;
+    }
+  }, { passive: false });
+  canvas.addEventListener('mousedown', e => { e.preventDefault(); INPUT.jumpQueued = true; });
+  DOM.startBtn.onclick = () => {
+    INPUT.startRunIntent = true;
+    // Play music directly here — ONLY gesture-context call that works on mobile.
+    // _startRun() no longer pushes a playMusic domEvent (that would race and cancel this).
+    const packTrack = GS.equippedPack && AUDIO_PACKS[GS.equippedPack]?.track;
+    if (packTrack && (GS.phase === 'IDLE' || GS.phase === 'GAME_OVER')) {
+      PreviewAudio.stop();
+      IdleHum.stop();
+      GameMusic.play(packTrack);
+    }
+  };
+  DOM.collectBtn.onclick = () => { INPUT.collectIntent = true; };
+  DOM.audioBtn.onclick = async () => {
+    await SimAudio.toggle();
+    // If audio just got enabled AND a pack is equipped, start its music track
+    if (GS.audio.active && GS.equippedPack) {
+      const ep = AUDIO_PACKS[GS.equippedPack];
+      if (ep && ep.track) {
+        IdleHum.stop();
+        GameMusic.play(ep.track);
+      }
+    }
+  };
+  DOM.uInc.onclick = () => { INPUT.upgradeInc = true; };
+  DOM.uJmp.onclick = () => { INPUT.upgradeJmp = true; };
+  DOM.uScr.onclick = () => { INPUT.upgradeScr = true; };
+  // Track mode toggle
+  // Track mode toggle removed — single unified audio engine
+  // Audio Pack Store
+  const storeOverlay = document.getElementById('storeOverlay');
+  document.getElementById('storeBtn').onclick = () => {
+    UISync.renderStore();
+    storeOverlay.classList.add('open');
+  };
+  document.getElementById('storeClose').onclick = () => { resetPreview(); storeOverlay.classList.remove('open'); UISync.renderStore(); };
+  document.getElementById('storeBackdrop').onclick = () => { resetPreview(); storeOverlay.classList.remove('open'); UISync.renderStore(); };
+  // Share modal: tap backdrop to close
+  document.getElementById('shareModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('shareModal')) {
+      document.getElementById('shareModal').classList.remove('open');
+    }
+  });
+  // Skill Tree overlay
+  const skillMenu = document.getElementById('skill-menu');
+  document.getElementById('openSkillBtn').onclick = () => {
+    UISync.renderSkillTree();
+    skillMenu.classList.add('open');
+  };
+  document.getElementById('closeSkillBtn').onclick = () => skillMenu.classList.remove('open');
+  document.getElementById('skillBackdrop').onclick = () => skillMenu.classList.remove('open');
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const tc = document.getElementById('tab-' + tab.dataset.tab);
+      if (tc) tc.classList.add('active');
+      if (tab.dataset.tab === 'missions') UISync.renderMissions();
+      if (tab.dataset.tab === 'shop') UISync.renderShop();
+      if (tab.dataset.tab === 'districts') UISync.renderDistricts();
+      if (tab.dataset.tab === 'lb') UISync.renderLB();
+    });
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 12 — INTRO ORCHESTRATION
+════════════════════════════════════════════════════════════════════ */
+function runIntro() { const bg=document.getElementById('cityBg'); let x=0; while(x<window.innerWidth+80){ const w=28+Math.random()*60|0, h=55+Math.random()*170|0; const el=document.createElement('div'); el.className='bld'; el.style.cssText=`width:${w}px;height:${h}px;margin-right:${1+Math.random()*4|0}px`; bg.appendChild(el); x+=w+5; } const LOAD_MSGS=['INITIALIZING KURO ENGINE','RENDERING NEON QUARTER','CALIBRATING SAFETY LANE','SYNCING AUDIO NEON-LINK','LOADING DISTRICTS','SPAWNING OBSTACLES','PRIMING ECONOMY GRID','KURO RUNNER — READY']; const msgEl=document.getElementById('loadMsg'); const pctEl=document.getElementById('loadPct'); const ctaEl=document.getElementById('introCta'); let mi=0,pct=0,ctaReady=false; const mt=setInterval(()=>{ if(++mi<LOAD_MSGS.length) msgEl.textContent=LOAD_MSGS[mi]; },380); const pt=setInterval(()=>{ pct=Math.min(pct+(Math.random()*11|0)+1,100); pctEl.textContent=pct+'%'; if(pct>=100){ clearInterval(pt); clearInterval(mt); msgEl.textContent='KURO RUNNER — READY'; setTimeout(()=>{ ctaEl.style.display='block'; ctaEl.style.opacity='1'; ctaReady=true; },400); } },110); let gone=false; function enter(){ if(gone||!ctaReady) return; gone=true; IdleHum.start(); const intro=document.getElementById('intro'); intro.classList.add('exit'); document.getElementById('game').classList.add('vis'); setTimeout(()=>{ if(intro.parentNode) intro.parentNode.removeChild(intro); },700); } ctaEl.addEventListener('click',enter); document.addEventListener('keydown',function onKey(e){ if(ctaReady&&!gone){ document.removeEventListener('keydown',onKey); enter(); } }); }
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 13 — MAIN LOOP
+════════════════════════════════════════════════════════════════════ */
+let _lastF = performance.now();
+let _uiFrame = 0;
+function mainLoop() {
+  const nowMs = performance.now();
+  const dt = Math.min((nowMs - _lastF) / 1000, 0.1);
+  _lastF = nowMs;
+  Simulation_tick(dt, nowMs);
+  Renderer.draw();
+  _uiFrame++;
+  if (_uiFrame % 3 === 0) UISync.sync();
+  requestAnimationFrame(mainLoop);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SECTION 14 — INITIALISATION
+════════════════════════════════════════════════════════════════════ */
+(function init() {
+  Persist.migrate();       // wipe stale localStorage state from older versions first
+  GS.bestRunScore = Persist.loadBest();
+  Persist.loadGear();
+  Persist.loadAvatars();
+  Persist.loadTree();
+  Persist.loadPacks();
+  // Pre-fetch default pack audio in background — blob ready before first Start Run tap
+  if (GS.equippedPack && AUDIO_PACKS[GS.equippedPack]?.track) {
+    GameMusic.prefetch(AUDIO_PACKS[GS.equippedPack].track);
+  }
+  SimMissions.init();
+  UISync.renderShop();
+  UISync.renderLB();
+  UISync.renderMissions();
+  UISync.renderDistricts();
+  UISync.renderSkillTree();
+  UISync.renderStore();
+  wireEvents();
+  runIntro();
+  requestAnimationFrame(mainLoop);
+})();
+
+})();
+</script>
+</body>
+</html>
